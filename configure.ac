@@ -426,6 +426,7 @@ AS_IF([test "${enable_static_linking:+set}" == "set"], [
 		AC_CHECK_LIB([png],[png_create_read_struct], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([iconv], [libiconv_open], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([expat],[XML_ParserCreate], [], [ac_lib_poppler=no])
+		AC_CHECK_LIB([lcms], [cmsOpenProfileFromMem], [], [ac_lib_poppler=no])
 ])
 
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], [], [ac_lib_poppler=no])
