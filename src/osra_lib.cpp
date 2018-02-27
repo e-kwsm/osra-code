@@ -358,6 +358,11 @@ void split_fragments_and_assemble_structure_record(
             std::cout << "Considering fragment #" << i + 1 << " " << fragments[i].x1 << "x" << fragments[i].y1 << "-" << fragments[i].x2 << "x"
                       << fragments[i].y2 << ", atoms: " << fragments[i].atom.size() << '.' << std::endl;
 
+	  if (verbose)
+	    {
+	      cout << "Page scale: " << page_scale << endl;
+	      cout << "Unpaper dx, dy: " << unpaper_dx<<" "<<unpaper_dy << endl;
+	    }
           if (fragments[i].atom.size() > MIN_A_COUNT)
             {
               frag_atom.clear();
@@ -755,9 +760,13 @@ int osra_process_image(
       if (verbose)
         std::cout << "Processing page " << (l+1) << " out of " << page << "..." << std::endl;
 
-      if (type == "PDF" || type == "PS")
-        page_scale *= (double) 72 / input_resolution;
-
+      if ((type == "PDF" || type == "PS"))
+	{
+	  if (input_resolution != 0)
+	    page_scale *= (double) 72 / input_resolution;
+	  else
+	    page_scale *= (double) 72 / 300;
+	}
 
       if (poppler_doc) // process PDF and PS files
 	{
