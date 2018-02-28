@@ -760,12 +760,12 @@ int osra_process_image(
       if (verbose)
         std::cout << "Processing page " << (l+1) << " out of " << page << "..." << std::endl;
 
-      if ((type == "PDF" || type == "PS"))
+      if ((type == "PDF" || type == "PS")) // https://stackoverflow.com/questions/10601995/how-to-display-a-pdf-in-its-true-scale-with-poppler
 	{
 	  if (input_resolution != 0)
-	    page_scale *= (double) 72 / input_resolution;
+	    page_scale *= (double) 110 / input_resolution;
 	  else
-	    page_scale *= (double) 72 / 300;
+	    page_scale *= (double) 110 / 300;
 	}
 
       if (poppler_doc) // process PDF and PS files
