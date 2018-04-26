@@ -360,8 +360,8 @@ void split_fragments_and_assemble_structure_record(
 
 	  if (verbose)
 	    {
-	      cout << "Page scale: " << page_scale << endl;
-	      cout << "Unpaper dx, dy: " << unpaper_dx<<" "<<unpaper_dy << endl;
+	      std::cout << "Page scale: " << page_scale << std::endl;
+	      std::cout << "Unpaper dx, dy: " << unpaper_dx<<" "<<unpaper_dy << std::endl;
 	    }
           if (fragments[i].atom.size() > MIN_A_COUNT)
             {
