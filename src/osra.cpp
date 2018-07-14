@@ -58,6 +58,9 @@ int main(int argc,
   TCLAP::SwitchArg adaptive_option("i", "adaptive", "Adaptive thresholding pre-processing, useful for low light/low contrast images", false);
   cmd.add(adaptive_option);
 
+  TCLAP::SwitchArg keep_option("k", "keep", "Keep image unsegmented, do not separate molecules from text", false);
+  cmd.add(keep_option);
+
   //
   // Output format options
   //
@@ -138,6 +141,7 @@ int main(int argc,
                  do_unpaper_option.getValue(),
                  jaggy_option.getValue(),
                  adaptive_option.getValue(),
+		 keep_option.getValue(),
                  output_format_option.getValue(),
                  embedded_format_option.getValue(),
                  show_confidence_option.getValue(),

@@ -52,6 +52,7 @@ int osra_process_image(
   int do_unpaper = 0,
   bool jaggy = false,
   bool adaptive = false,
+  bool keep_option = false,
   std::string output_format = "smi",
   std::string embedded_format = "",
   bool show_confidence = false,

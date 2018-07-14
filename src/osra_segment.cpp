@@ -197,11 +197,12 @@ void build_distance_matrix(const std::vector<std::vector<point_t> > &margins, un
         }
 }
 
-std::list<std::list<std::list<point_t> > > build_explicit_clusters(
+void build_explicit_clusters(
     const std::list<std::list<int> > &clusters,
-    const std::vector<std::list<point_t> > &segments)
+    const std::vector<std::list<point_t> > &segments,
+    std::list<std::list<std::list<point_t> > > &explicit_clusters)
 {
-  std::list<std::list<std::list<point_t> > > explicit_clusters;
+  explicit_clusters.clear();
   for (std::list<std::list<int> >::const_iterator c = clusters.begin(); c != clusters.end(); c++)
     {
       std::list<std::list<point_t> > set_of_segments;
@@ -211,7 +212,6 @@ std::list<std::list<std::list<point_t> > > build_explicit_clusters(
       if (!set_of_segments.empty())
         explicit_clusters.push_back(set_of_segments);
     }
-  return explicit_clusters;
 }
 
 void remove_separators(std::vector<std::list<point_t> > &segments,
@@ -541,12 +541,13 @@ void remove_tables(std::vector<std::list<point_t> > &segments, std::vector<std::
     }
 }
 
-std::list<std::list<int> > assemble_clusters(
+void assemble_clusters(
     const std::vector<std::vector<point_t> > &margins, int dist,
     const std::vector<std::vector<int> > &distance_matrix, std::vector<int> &avail, bool text,
-    const std::vector<std::vector<int> > &area_matrix)
+    const std::vector<std::vector<int> > &area_matrix,
+    std::list<std::list<int> > &clusters)
 {
-  std::list<std::list<int> > clusters;
+  clusters.clear();
   std::list<int> bag;
 
   for (unsigned int s = 0; s < margins.size(); s++)
@@ -571,8 +572,6 @@ std::list<std::list<int> > assemble_clusters(
           }
         clusters.push_back(new_cluster);
       }
-
-  return (clusters);
 }
 
 void remove_text_blocks(const std::list<std::list<int> > &clusters,
@@ -996,13 +995,15 @@ void find_agent_strings(std::vector<std::vector<point_t> > &margins,
     }
 }
 
-std::list<std::list<std::list<point_t> > > find_segments(
+void find_segments(
     const Image &image, double threshold, const ColorGray &bgColor, bool adaptive, bool is_reaction,
-    std::vector<arrow_t> &arrows, std::vector<plus_t> &pluses, bool verbose)
+    std::vector<arrow_t> &arrows, std::vector<plus_t> &pluses, bool keep, bool verbose,
+    std::list<std::list<std::list<point_t> > > &explicit_clusters)
 {
+  explicit_clusters.clear();
   std::vector<std::list<point_t> > segments;
   std::vector<std::vector<point_t> > margins;
-  std::list<std::list<std::list<point_t> > > explicit_clusters;
+  
 
   // 1m34s
 
@@ -1021,70 +1022,81 @@ std::list<std::list<std::list<point_t> > > find_segments(
       find_arrows_pluses(margins,segments,arrows, pluses);
       find_agent_strings(margins,segments,arrows,image,threshold,bgColor,verbose);
     }
-
+  
   remove_separators(segments, margins, SEPARATOR_ASPECT, SEPARATOR_AREA);
 
   remove_tables(segments, margins, SEPARATOR_AREA);
-
   // 2m22s
 
-  unsigned int max_dist = MAX_DIST;
-  unsigned int max_area_ratio = MAX_AREA_RATIO;
-  std::vector<std::vector<int> > distance_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
-  std::vector<std::vector<int> > area_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
-  std::vector<std::vector<int> > features(max_area_ratio, std::vector<int> (max_dist, 0));
-
-  build_distance_matrix(margins, max_dist, distance_matrix, features, segments, max_area_ratio, area_matrix);
-
-  // 2m53s
-
-  std::vector<int> avail(margins.size(), 1);
-
-  /*
-  unsigned int ar;
-
-  for (unsigned int i = 0; i < margins.size(); i++)
-  	for (unsigned int j = i + 1; j < margins.size(); j++) {
-  		ar = area_ratio(segments[i].size(), segments[j].size());
-  		if (ar < max_area_ratio && distance_matrix[i][j] < max_dist)
-  			features[ar][distance_matrix[i][j]]++;
-  	}
-  */
-
-  // 5m53s -> new 4m15s
-
-  std::vector<int> stats(max_dist, 0);
-  int entropy_max = locate_max_entropy(features, max_area_ratio, max_dist, stats);
-
-  int dist = SINGLE_IMAGE_DIST;
-
-  if (entropy_max > THRESHOLD_LEVEL && !adaptive && margins.size() > 100)
+  std::list<std::list<int> > clusters;
+  if (keep)
     {
-      std::vector<int> text_stats(max_dist, 0);
-      for (unsigned int j = 2; j < max_dist; j++)
-        {
-          text_stats[j] = features[1][j];
-          //cout << j << " " << text_stats[j] << endl;
-        }
-
-      int dist_text = locate_first_min(text_stats);
-
-      const std::list<std::list<int> > &text_blocks = assemble_clusters(
-          margins, dist_text, distance_matrix, avail, true, area_matrix);
-      remove_text_blocks(text_blocks, segments, avail);
-
-      dist = 2 * dist_text;
+      std::list<int> new_cluster;
+      for (unsigned int s = 0; s < margins.size(); s++)
+      {
+        new_cluster.push_back(s);       
+      }
+      clusters.push_back(new_cluster);      
     }
-  //  if (dist<20) dist = 20;
-  for (unsigned int i = 0; i < margins.size(); i++)
-    if (avail[i] != -1)
-      avail[i] = 1;
+  else
+    {
+      unsigned int max_dist = MAX_DIST;
+      unsigned int max_area_ratio = MAX_AREA_RATIO;
+      std::vector<std::vector<int> > distance_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
+      std::vector<std::vector<int> > area_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
+      std::vector<std::vector<int> > features(max_area_ratio, std::vector<int> (max_dist, 0));
 
-  const std::list<std::list<int> > &clusters = assemble_clusters(
-      margins, dist, distance_matrix, avail, false, area_matrix);
+      build_distance_matrix(margins, max_dist, distance_matrix, features, segments, max_area_ratio, area_matrix);
 
-  explicit_clusters = build_explicit_clusters(clusters, segments);
-  return explicit_clusters;
+      // 2m53s
+
+      std::vector<int> avail(margins.size(), 1);
+
+      /*
+	unsigned int ar;
+
+	for (unsigned int i = 0; i < margins.size(); i++)
+  	for (unsigned int j = i + 1; j < margins.size(); j++) {
+	ar = area_ratio(segments[i].size(), segments[j].size());
+	if (ar < max_area_ratio && distance_matrix[i][j] < max_dist)
+	features[ar][distance_matrix[i][j]]++;
+  	}
+      */
+
+      // 5m53s -> new 4m15s
+
+      std::vector<int> stats(max_dist, 0);
+      int entropy_max = locate_max_entropy(features, max_area_ratio, max_dist, stats);
+
+      int dist = SINGLE_IMAGE_DIST;
+
+      if (entropy_max > THRESHOLD_LEVEL && !adaptive && margins.size() > 100)
+	{
+	  std::vector<int> text_stats(max_dist, 0);
+	  for (unsigned int j = 2; j < max_dist; j++)
+	    {
+	      text_stats[j] = features[1][j];
+	      //cout << j << " " << text_stats[j] << endl;
+	    }
+
+	  int dist_text = locate_first_min(text_stats);
+
+	  std::list<std::list<int> > text_blocks;
+	  assemble_clusters(margins, dist_text, distance_matrix, avail, true, area_matrix, text_blocks);
+	  remove_text_blocks(text_blocks, segments, avail);
+
+	  dist = 2 * dist_text;
+	}
+      //  if (dist<20) dist = 20;
+      for (unsigned int i = 0; i < margins.size(); i++)
+	if (avail[i] != -1)
+	  avail[i] = 1;
+
+
+      assemble_clusters(margins, dist, distance_matrix, avail, false, area_matrix, clusters);
+    }
+  
+  build_explicit_clusters(clusters, segments, explicit_clusters);
 }
 
 void find_box_size(const std::set<std::pair<int,int> > &set1, int &x1, int &x2, int &y1, int &y2)

@@ -583,6 +583,7 @@ int osra_process_image(
   int do_unpaper,
   bool jaggy,
   bool adaptive_option,
+  bool keep_option,
   std::string output_format,
   std::string embedded_format,
   bool show_confidence,
@@ -839,7 +840,8 @@ int osra_process_image(
         }
 
       // 0.1 is used for THRESHOLD_BOND here to allow for farther processing.
-      std::list<std::list<std::list<point_t> > > clusters = find_segments(image, 0.1, bgColor, adaptive, is_reaction, arrows[l], pluses[l], verbose);
+      std::list<std::list<std::list<point_t> > > clusters;
+      find_segments(image, 0.1, bgColor, adaptive, is_reaction, arrows[l], pluses[l], keep_option, verbose, clusters);
 
       if (verbose)
         std::cout << "Number of clusters: " << clusters.size() << '.' << std::endl;
