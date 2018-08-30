@@ -68,5 +68,6 @@ int osra_process_image(
   bool verbose = false,
   const std::string &output_image_file_prefix = "",
   const std::string &resize = "",
-  const std::string &preview = ""
+  const std::string &preview = "",
+  const std::string &recognized_chars = ""
 );

@@ -94,6 +94,9 @@ int main(int argc,
   TCLAP::ValueArg<std::string> superatom_file_option("a", "superatom", "Superatom label map to SMILES", false, "", "configfile");
   cmd.add(superatom_file_option);
 
+  TCLAP::ValueArg<std::string> recognized_chars("", "ocr", "OCR character filter", false, "", "oOcCnNHFsSBuUgMeEXYZRPp23456789AmThDGQ");
+  cmd.add(recognized_chars);
+
   //
   // Debugging options
   //
@@ -157,7 +160,8 @@ int main(int argc,
                  verbose_option.getValue(),
                  output_image_file_prefix_option.getValue(),
                  resize_option.getValue(),
-		 preview_option.getValue()
+		 preview_option.getValue(),
+		 recognized_chars.getValue()
                );
 
   return result;

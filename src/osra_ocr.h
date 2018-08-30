@@ -56,11 +56,12 @@ void osra_ocr_destroy();
 //                     which is hopefully the character we are trying to recognize
 //      no_filtering - do not apply character filter
 //      numbers - only allow numbers in the output 0..9
+//      recognized_chars - user-supplied ocr filter
 //
 // Returns:
 //      recognized character or 0
 char get_atom_label(const Magick::Image &image, const Magick::ColorGray &bg, int x1, int y1, int x2, int y2,
-                    double THRESHOLD, int dropx, int dropy, bool no_filtering, bool verbose, bool numbers = false);
+                    double THRESHOLD, int dropx, int dropy, bool no_filtering, bool verbose, bool numbers = false, const std::string &recognized_chars="");
 
 // Function: fix_atom_name()
 //

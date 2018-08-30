@@ -136,13 +136,14 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
 // real_font_width - detected font width
 // real_font_height - detected font height
 // verbose - flag for verbose output
+// recognized_chars - user-supplied ocr filter
 //
 // Returns:
 // number of recognized characters
 int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_t> &letters, std::vector<atom_t> &atom,
                std::vector<bond_t> &bond, int n_atom, int n_bond, int height,
                int width, ColorGray &bgColor, double THRESHOLD, int max_font_width,
-               int max_font_height, int &real_font_width, int &real_font_height, bool verbose);
+               int max_font_height, int &real_font_width, int &real_font_height, bool verbose, const std::string &recognized_chars);
 
 // Function: find_numbers()
 //
@@ -266,11 +267,12 @@ int remove_small_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<
 // THRESHOLD - black-white threshold for image binarization
 // size - minimum number of bonds which can constitute a character
 // verbose - flag for verbose output
+// recognized_chars - user-supplied ocr filter
 //
 // Returns:
 // new value for n_letters
 int find_fused_chars(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom,
                      std::vector<letters_t> &letters, int n_letters, int max_font_height,
                      int max_font_width, char dummy, const Image &orig, const ColorGray &bgColor,
-                     double THRESHOLD, unsigned int size, bool verbose);
+                     double THRESHOLD, unsigned int size, bool verbose, const std::string &recognized_chars);
 #endif

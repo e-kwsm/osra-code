@@ -203,7 +203,8 @@ char osra_cuneiform_ocr(Magick::Image &cuneiform_img, const std::string &char_fi
 #endif
 
 char get_atom_label(const Magick::Image &image, const Magick::ColorGray &bg, int x1, int y1, int x2, int y2,
-                    double THRESHOLD, int dropx, int dropy, bool no_filtering, bool verbose, bool numbers)
+                    double THRESHOLD, int dropx, int dropy, bool no_filtering, bool verbose, bool numbers,
+		    const std::string &recognized_chars)
 {
   char c = UNKNOWN_CHAR;
 
@@ -273,6 +274,8 @@ char get_atom_label(const Magick::Image &image, const Magick::ColorGray &bg, int
 
     // The list of all characters, that can be recognised as atom label:
     std::string char_filter = RECOGNIZED_CHARS;
+    if (!recognized_chars.empty())
+      char_filter = recognized_chars;
     if (numbers) char_filter = "1";
     if (no_filtering) char_filter.clear();
 

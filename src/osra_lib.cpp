@@ -599,7 +599,8 @@ int osra_process_image(
   bool verbose,
   const std::string &output_image_file_prefix,
   const std::string &resize,
-  const std::string &preview
+  const std::string &preview,
+  const std::string &recognized_chars
 )
 {
 #ifdef OSRA_LIB
@@ -923,7 +924,7 @@ int osra_process_image(
 
                 int real_font_width, real_font_height;
                 n_letters = find_chars(p, orig_box, letters, atom, bond, n_atom, n_bond, height, width, bgColor,
-                                       THRESHOLD_BOND, max_font_width, max_font_height, real_font_width, real_font_height,verbose);
+                                       THRESHOLD_BOND, max_font_width, max_font_height, real_font_width, real_font_height,verbose, recognized_chars);
                 if (verbose)
                   std::cout << "Number of atoms: " << n_atom << ", bonds: " << n_bond << ", " << n_letters << " letters: " << n_letters << " " << letters << " after find_atoms()" << std::endl;
 
@@ -955,10 +956,10 @@ int osra_process_image(
 		n_bond = find_wavy_bonds(bond,n_bond,atom,avg_bond_length);
 		//				if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 n_letters = find_fused_chars(bond, n_bond, atom, letters, n_letters, real_font_height,
-                                             real_font_width, 0, orig_box, bgColor, THRESHOLD_BOND, 3, verbose);
+                                             real_font_width, 0, orig_box, bgColor, THRESHOLD_BOND, 3, verbose, recognized_chars);
 
                 n_letters = find_fused_chars(bond, n_bond, atom, letters, n_letters, real_font_height,
-                                             real_font_width, '*', orig_box, bgColor, THRESHOLD_BOND, 5, verbose);
+                                             real_font_width, '*', orig_box, bgColor, THRESHOLD_BOND, 5, verbose, recognized_chars);
 
                 flatten_bonds(bond, n_bond, atom, 3);
                 remove_zero_bonds(bond, n_bond, atom);
@@ -1041,7 +1042,7 @@ int osra_process_image(
 
                 n_letters = clean_unrecognized_characters(bond, n_bond, atom, real_font_height, real_font_width, 0,
                             letters, n_letters);
-		int recognized_chars = count_recognized_chars(atom,bond);
+		int num_recognized_chars = count_recognized_chars(atom,bond);
 
 
                 assign_charge(atom, bond, n_atom, n_bond, spelling, superatom, debug);
@@ -1060,7 +1061,7 @@ int osra_process_image(
 							      box_scale,page_scale,rotation,unpaper_dx,unpaper_dy,output_format,embedded_format,is_reaction,show_confidence,
 							      show_resolution_guess,show_page,show_coordinates, show_avg_bond_length,array_of_structures,
 							      array_of_avg_bonds,array_of_ind_conf,array_of_images,array_of_boxes,total_boxes,total_confidence,
-							      recognized_chars,show_learning,res_iter,verbose, bracket_boxes);
+							      num_recognized_chars,show_learning,res_iter,verbose, bracket_boxes);
 
                 if (st != NULL)
                   potrace_state_free(st);

@@ -661,7 +661,7 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
                std::vector<atom_t> &atom, std::vector<bond_t> &bond,
                int n_atom, int n_bond, int height, int width, ColorGray &bgColor, double THRESHOLD,
                int max_font_width, int max_font_height, int &real_font_width, int &real_font_height,
-               bool verbose)
+               bool verbose, const std::string &recognized_chars)
 {
   int n, *tag, n_letters = 0;
   potrace_dpoint_t (*c)[3];
@@ -843,7 +843,7 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
             {
 
               char label = 0;
-              label = get_atom_label(orig, bgColor, left, top, right, bottom, THRESHOLD, (right + left) / 2, top, false, verbose);
+              label = get_atom_label(orig, bgColor, left, top, right, bottom, THRESHOLD, (right + left) / 2, top, false, verbose, false, recognized_chars);
 
               if (label != 0)
                 {
@@ -878,10 +878,10 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
               char label1 = 0;
               int newtop = (top + bottom) / 2;
               label1 = get_atom_label(orig, bgColor, left, newtop, right, bottom, THRESHOLD, (right + left) / 2,
-                                      newtop, false, verbose);
+                                      newtop, false, verbose, false, recognized_chars);
               char label2 = 0;
               int newbottom = (top + bottom) / 2;
-              label2 = get_atom_label(orig, bgColor, left, top, right, newbottom, THRESHOLD, (right + left) / 2, top, false, verbose);
+              label2 = get_atom_label(orig, bgColor, left, top, right, newbottom, THRESHOLD, (right + left) / 2, top, false, verbose, false, recognized_chars);
               if (label1 != 0 && label2 != 0 && !(tolower(label1) == 's' && tolower(label2) =='s'))
                 {
                   //cout << label1 << label2 << endl;
@@ -933,11 +933,11 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
               char label1 = 0;
               int newright = (left + right) / 2;
               label1 = get_atom_label(orig, bgColor, left, top, newright, bottom, THRESHOLD, (left + newright) / 2,
-                                      top, false, verbose);
+                                      top, false, verbose, false, recognized_chars);
               char label2 = 0;
               int newleft = (left + right) / 2;
               label2 = get_atom_label(orig, bgColor, newleft, top, right, bottom, THRESHOLD, (newleft + right) / 2,
-                                      top, false, verbose);
+                                      top, false, verbose, false, recognized_chars);
               if ((label1 != 0) && (label2 != 0))
                 {
                   //cout << label1 << label2 << endl;
@@ -1003,7 +1003,7 @@ int find_fused_chars(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> 
                      std::vector<letters_t> &letters, int n_letters,
                      int max_font_height, int max_font_width, char dummy,
                      const Image &orig, const ColorGray &bgColor,
-                     double THRESHOLD, unsigned int size, bool verbose)
+                     double THRESHOLD, unsigned int size, bool verbose, const std::string &recognized_chars)
 {
   double dist = std::max(max_font_width, max_font_height);
 
@@ -1095,7 +1095,7 @@ int find_fused_chars(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> 
                 else
                   {
                     label = get_atom_label(orig, bgColor, left, top, right, bottom, THRESHOLD, (left + right) / 2,
-                                           top, false, verbose);
+                                           top, false, verbose, false, recognized_chars);
                   }
                 if ((label != 0 && label != 'P' && label != 'p' && label != 'F' && label != 'X' && label != 'Y'
                      && label != 'n' && label != 'F' && label != 'U' && label != 'u' && label != 'h') || dummy
