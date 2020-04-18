@@ -1047,6 +1047,7 @@ int osra_process_image(
 
                 assign_charge(atom, bond, n_atom, n_bond, spelling, superatom, debug);
                 find_up_down_bonds(bond, n_bond, atom, thickness);
+		remove_high_order_bonds_connected_to_hash_bonds(bond, n_bond, atom, avg_bond_length);
                 int real_atoms = count_atoms(atom, n_atom);
                 int bond_max_type = 0;
                 int real_bonds = count_bonds(bond, n_bond,bond_max_type);

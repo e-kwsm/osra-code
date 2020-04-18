@@ -430,3 +430,5 @@ void remove_vertical_bonds_close_to_brackets(const std::vector<bracket_t> &brack
                                              std::vector<atom_t> &atom, const std::vector<bond_t> &bond,
                                              int n_bond, double thickness, double avg_bond_length);
 
+
+void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, double avg);

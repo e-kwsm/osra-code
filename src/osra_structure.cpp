@@ -2986,5 +2986,34 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
 
 }
 
+void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, double avg)
+{
+  for (int i = 0; i < n_bond; i++)
+    if (bond[i].exists && bond[i].type > 2 && bond_length(bond, i, atom) < avg/2)
+      {
+	if (terminal_bond(bond[i].a, i, bond, n_bond) && atom[bond[i].a].label == " ")
+	  {
+	    for (int j = 0; j < n_bond; j++)
+	      if (j != i && bond[j].exists && bond[j].hash && (bond[j].a == bond[i].b || bond[j].b == bond[i].b))
+		{
+		  bond[i].exists = false;
+		  atom[bond[i].a].exists = false;
+		  break;
+		}
+	  }
+	if (terminal_bond(bond[i].b, i, bond, n_bond) && atom[bond[i].b].label == " ")
+	  {
+	    for (int j = 0; j < n_bond; j++)
+	      if (j != i && bond[j].exists && bond[j].hash && (bond[j].a == bond[i].a || bond[j].b == bond[i].a))
+		{
+		  bond[i].exists = false;
+		  atom[bond[i].b].exists = false;
+		  break;
+		}
+	  }
+      }
+}
+      
+      
 
 // US20050049267A1-20050303-C04374.png
