@@ -335,7 +335,7 @@ void split_fragments_and_assemble_structure_record(
   std::vector<atom_t> frag_atom;
   std::vector<bond_t> frag_bond;
 
-  if (real_atoms > MIN_A_COUNT && real_atoms < MAX_A_COUNT && real_bonds < MAX_B_COUNT && bond_max_type>0 && bond_max_type<5)
+  if (real_atoms > MIN_A_COUNT && real_atoms < MAX_A_COUNT && real_bonds < MAX_B_COUNT && bond_max_type>0 && bond_max_type<4)
     {
       int num_frag;
       num_frag = resolve_bridge_bonds(atom, n_atom, bond, n_bond, 2 * thickness, avg_bond_length, superatom, verbose);
