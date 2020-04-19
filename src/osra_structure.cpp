@@ -1571,7 +1571,7 @@ int find_dashed_bonds(const potrace_path_t *p, std::vector<atom_t> &atom, std::v
             d.area = count_area(box, d.x, d.y);
           else
             d.area = p->area;
-          if (distance(l, t, r, b) < avg / 3)
+          if (distance(l, t, r, b) < avg/2)
 	    dot.push_back(d);
         }
       p = p->next;

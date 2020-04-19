@@ -954,7 +954,7 @@ int osra_process_image(
                 remove_zero_bonds(bond, n_bond, atom);
 
 		n_bond = find_wavy_bonds(bond,n_bond,atom,avg_bond_length);
-		//				if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
                 n_letters = find_fused_chars(bond, n_bond, atom, letters, n_letters, real_font_height,
                                              real_font_width, 0, orig_box, bgColor, THRESHOLD_BOND, 3, verbose, recognized_chars);
 
@@ -972,7 +972,7 @@ int osra_process_image(
                 n_bond = double_triple_bonds(atom, bond, n_bond, avg_bond_length, n_atom, max_dist_double_bond);
                 n_atom = find_dashed_bonds(p, atom, bond, n_atom, &n_bond, std::max(MAX_DASH, int(avg_bond_length / 3)),
                                            avg_bond_length, orig_box, bgColor, THRESHOLD_BOND, thick, avg_bond_length, letters);
-
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 n_letters = remove_small_bonds(bond, n_bond, atom, letters, n_letters, real_font_height,
                                                MIN_FONT_HEIGHT, avg_bond_length);
 
@@ -1047,7 +1047,7 @@ int osra_process_image(
 
                 assign_charge(atom, bond, n_atom, n_bond, spelling, superatom, debug);
                 find_up_down_bonds(bond, n_bond, atom, thickness);
-		remove_high_order_bonds_connected_to_hash_bonds(bond, n_bond, atom, avg_bond_length);
+		//remove_high_order_bonds_connected_to_hash_bonds(bond, n_bond, atom, avg_bond_length);
                 int real_atoms = count_atoms(atom, n_atom);
                 int bond_max_type = 0;
                 int real_bonds = count_bonds(bond, n_bond,bond_max_type);
