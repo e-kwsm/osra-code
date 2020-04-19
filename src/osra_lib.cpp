@@ -972,7 +972,7 @@ int osra_process_image(
                 n_bond = double_triple_bonds(atom, bond, n_bond, avg_bond_length, n_atom, max_dist_double_bond);
                 n_atom = find_dashed_bonds(p, atom, bond, n_atom, &n_bond, std::max(MAX_DASH, int(avg_bond_length / 3)),
                                            avg_bond_length, orig_box, bgColor, THRESHOLD_BOND, thick, avg_bond_length, letters);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
                 n_letters = remove_small_bonds(bond, n_bond, atom, letters, n_letters, real_font_height,
                                                MIN_FONT_HEIGHT, avg_bond_length);
 
@@ -1055,7 +1055,7 @@ int osra_process_image(
                 if (verbose)
                   std::cout << "Final number of atoms: " << real_atoms << ", bonds: " << real_bonds << ", chars: " << n_letters << '.' << std::endl;
 
-
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 split_fragments_and_assemble_structure_record(atom,n_atom,bond,n_bond,boxes,
 							      l,k,resolution,res_iter,output_image_file_prefix,image,orig_box,real_font_width,real_font_height,
 							      thickness,avg_bond_length,superatom,real_atoms,real_bonds,bond_max_type,

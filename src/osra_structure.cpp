@@ -1447,7 +1447,7 @@ bool curve_in_letter(const potrace_path_t *p, std::vector<letters_t> &letters)
 }
 
 int find_dashed_bonds(const potrace_path_t *p, std::vector<atom_t> &atom, std::vector<bond_t> &bond,
-                      int n_atom, int *n_bond, int max, double avg, const Image &img,
+                      int n_atom, int *n_bond, int max, double max_dash_length, const Image &img,
                       const ColorGray &bg, double THRESHOLD, bool thick, double dist,
                       std::vector<letters_t> &letters)
 {
@@ -1571,7 +1571,7 @@ int find_dashed_bonds(const potrace_path_t *p, std::vector<atom_t> &atom, std::v
             d.area = count_area(box, d.x, d.y);
           else
             d.area = p->area;
-          if (distance(l, t, r, b) < avg/2)
+          if (distance(l, t, r, b) < max_dash_length)
 	    dot.push_back(d);
         }
       p = p->next;
