@@ -26,6 +26,7 @@
 #include <openbabel/obconversion.h>
 #include <openbabel/reaction.h>
 #include <openbabel/generic.h>
+#include <openbabel/reactionfacade.h>
 
 #include "osra_segment.h"
 #include "osra_reaction.h"
@@ -50,40 +51,71 @@ std::string convert_page_to_reaction(
     std::string value, bool reversible)
 {
   std::string reaction;
-  OBConversion *conv=new OBConversion;
-  conv->SetInAndOutFormats(SUBSTITUTE_REACTION_FORMAT,output_format.c_str());
+  OBConversion conv;
+  conv.SetInAndOutFormats(SUBSTITUTE_REACTION_FORMAT,output_format.c_str());
   std::ostringstream strstr;
 
-  OBReaction react;
+  if (output_format == "rsmi") 
+    {
+      OBReaction react;
+      for (int j=0; j<reactants.size(); j++)
+	{
+	  std::shared_ptr<OBMol> reactant(new OBMol);
+	  conv.ReadString(reactant.get(), page_of_structures[reactants[j]]);
+	  react.AddReactant(reactant);
+	}
+      for (int j=0; j<products.size(); j++)
+	{
+	  std::shared_ptr<OBMol> product(new OBMol);
+	  conv.ReadString(product.get(), page_of_structures[products[j]]);
+	  react.AddProduct(product);
+	}
+      //	  react.AddAgent(transition);
+      if (reversible) react.SetReversible(true);
+      
+      trim(value);
+      if (!value.empty())
+	{
+	  OBPairData *label = new OBPairData;
+	  label->SetAttribute("OSRA_REACTION_AGENT");
+	  label->SetValue(value.c_str());
+	  react.SetData(label);
+	  //      react.SetComment(value);
+	  react.SetTitle(value);
+	}
+      strstr << conv.WriteString(&react, true);
+      reaction = strstr.str();
+      return(reaction);
+    }
+
+  OBMol mol;
+  OBReactionFacade rxnfacade(&mol);
   for (int j=0; j<reactants.size(); j++)
     {
-      std::shared_ptr<OBMol> reactant(new OBMol);
-      conv->ReadString(reactant.get(), page_of_structures[reactants[j]]);
-      react.AddReactant(reactant);
+      OBMol reactant;
+      conv.ReadString(&reactant, page_of_structures[reactants[j]]);
+      rxnfacade.AddComponent(&reactant, REACTANT);
     }
   for (int j=0; j<products.size(); j++)
     {
-      std::shared_ptr<OBMol> product(new OBMol);
-      conv->ReadString(product.get(), page_of_structures[products[j]]);
-      react.AddProduct(product);
+      OBMol product;
+      conv.ReadString(&product, page_of_structures[products[j]]);
+      rxnfacade.AddComponent(&product, PRODUCT);
     }
-  //	  react.AddAgent(transition);
-  if (reversible) react.SetReversible(true);
-
+  //   if (reversible) react.SetReversible(true);
+  mol.SetIsReaction();
   trim(value);
   if (!value.empty())
     {
-            OBPairData *label = new OBPairData;
-            label->SetAttribute("OSRA_REACTION_AGENT");
-            label->SetValue(value.c_str());
-            react.SetData(label);
-//      react.SetComment(value);
-      react.SetTitle(value);
+      OBPairData *label = new OBPairData;
+      label->SetAttribute("OSRA_REACTION_AGENT");
+      label->SetValue(value.c_str());
+      mol.SetData(label);
+      //      react.SetComment(value);
+      mol.SetTitle(value);
     }
-  strstr << conv->WriteString(&react, true);
+  strstr << conv.WriteString(&mol, true);
   reaction = strstr.str();
-  if (output_format != "rxn") // rxn format seems to have a double-free problem in OB 2.3.1
-   delete conv;
   return(reaction);
 }
 
