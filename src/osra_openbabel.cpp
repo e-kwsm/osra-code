@@ -16,12 +16,19 @@
  this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
  St, Fifth Floor, Boston, MA 02110-1301, USA
  *****************************************************************************/
-
+#include <openbabel/atom.h>
+#include <openbabel/bond.h>
+#include <openbabel/ring.h>
 #include <openbabel/mol.h>
 #include <openbabel/obconversion.h>
 #include <openbabel/builder.h>
 #include <openbabel/alias.h>
+#include <openbabel/stereo/stereo.h>
 #include <openbabel/stereo/tetrahedral.h>
+#include <openbabel/elements.h>
+#include <openbabel/obiter.h>
+#include <openbabel/elements.h>
+#include <openbabel/obfunctions.h>
 
 #include <sstream> // std:ostringstream
 #include <iostream> // std::cerr
@@ -55,7 +62,10 @@ int osra_openbabel_init()
   OBConversion conv;
   OBMol mol;
 
-  conv.SetInFormat("SMI");
+  bool ok = conv.SetInFormat("SMI", false);
+  if (!ok)
+    return ERROR_UNKNOWN_OPENBABEL_FORMAT;
+  
   conv.ReadString(&mol, "[*]");
 
   if (mol.NumAtoms() == 0)
@@ -168,7 +178,7 @@ bool create_atom(OBMol &mol, atom_t &atom, double scale,
         }
 
       // If not found, lookup the atom number in periodic table of elements:
-      atom.anum = etab.GetAtomicNum(atom.label.c_str());
+      atom.anum = OBElements::GetAtomicNum(atom.label.c_str());
     }
 
   atom.n = mol.NumAtoms() + 1;
@@ -219,11 +229,11 @@ bool create_atom(OBMol &mol, atom_t &atom, double scale,
 //
 // Returns:
 //      confidence estimate
-double confidence_function(int* x, int n)
+double confidence_function(unsigned int* x, unsigned int n)
 {
   double c[] = {-0.11469143725730054, 0.15723547931889853, 0.19765680222250673, 0.249101590474403, 0.1897669087341134, 0.19588348907301223, 0.3354622208036507, 0.16779269801176255, -0.21232000222198893, 0.016958281784354032, -0.08672059360133752, -0.05105752296619957, -0.349912750824004, 0.18836317536530647, 0.22316782354758827, 0.27741998968081166, 0.25710999274481955, 0.27968899280120096, 0.12695166847876285, -0.10020778884718293, 0.05150631410596443, 0.22283571763712148, 0.23130179826714167, 0.1049054095759948, 0.05333970810460394, -0.12491056666737535};
   double r = 0;
-  for (int i=0; i<n; i++)
+  for (unsigned int i=0; i<n; i++)
     r += c[i]*x[i];
 
   return (r);
@@ -330,11 +340,11 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
           {
             int bond_flags = 0;
 
-            if (bond[i].up)
+	    /*            if (bond[i].up)
               bond_flags = OB_TORUP_BOND;
             else if (bond[i].down)
               bond_flags = OB_TORDOWN_BOND;
-
+	    */
             if (verbose)
               std::cout << "Creating bond #" << mol.NumBonds() << " " << atom[bond[i].a].n << "->"
                         << atom[bond[i].b].n << ", type: " << bond[i].type << ", flags: " << bond_flags << '.' << std::endl;
@@ -368,9 +378,9 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
   // The logic below calculates the information both for molecule statistics and for confidence function:
 
   OBBondIterator bond_iter;
-  int Num_HashBonds = 0;
-  int Num_WedgeBonds = 0;
-  int Num_DoubleBonds = 0;
+  unsigned int Num_HashBonds = 0;
+  unsigned int Num_WedgeBonds = 0;
+  unsigned int Num_DoubleBonds = 0;
 
   // This block modifies the molecule:
   for (OBBond *b = mol.BeginBond(bond_iter); b; b = mol.NextBond(bond_iter))
@@ -378,23 +388,23 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
       if (b->IsInRing())
         {
           // Clear any indication of "/" and "\" double bond stereochemistry:
-          b->UnsetUp();
-          b->UnsetDown();
+          //b->UnsetUp();
+          //b->UnsetDown();
         }
       else
         // Clear all aromaticity information for the bond (affects "num_aromatic" variable below):
-        b->UnsetAromatic();
+        b->SetAromatic(false);
       if (b->IsHash())
 	Num_HashBonds++;
       if (b->IsWedge())
 	Num_WedgeBonds++;
-      if (b->IsDouble() && (b->GetBeginAtom()->IsOxygen() ||  b->GetEndAtom()->IsOxygen()))
+      if (b->GetBondOrder() == 2 && (b->GetBeginAtom()->GetAtomicNum() == OBElements::Oxygen ||  b->GetEndAtom()->GetAtomicNum() == OBElements::Oxygen))
 	Num_DoubleBonds++;
     }
 
-  std::vector<int> Num_Rings(8, 0); // number of rings of the given size (e.g. "Num_Rings[2]" = number of rings of size 2)
-  int num_rings = 0; // total number of rings
-  int num_aromatic = 0; // total number of aromatic rings
+  std::vector<unsigned int> Num_Rings(8, 0); // number of rings of the given size (e.g. "Num_Rings[2]" = number of rings of size 2)
+  unsigned int num_rings = 0; // total number of rings
+  unsigned int num_aromatic = 0; // total number of aromatic rings
 
   {
     OBMol mol_without_R(mol);
@@ -431,26 +441,26 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 
   if (confidence)
     {
-      int C_Count = 0;
-      int N_Count = 0;
-      int O_Count = 0;
-      int F_Count = 0;
-      int S_Count = 0;
-      int Cl_Count = 0;
-      int Br_Count = 0;
-      int R_Count = 0;
-      int Xx_Count = 0;
-      int Si_Count = 0;
-      int Me_Count = 0;
-      int U_Count = 0;
-      int Li_Count = 0;
-      int PositiveCharge = 0;
+      unsigned int C_Count = 0;
+      unsigned int N_Count = 0;
+      unsigned int O_Count = 0;
+      unsigned int F_Count = 0;
+      unsigned int S_Count = 0;
+      unsigned int Cl_Count = 0;
+      unsigned int Br_Count = 0;
+      unsigned int R_Count = 0;
+      unsigned int Xx_Count = 0;
+      unsigned int Si_Count = 0;
+      unsigned int Me_Count = 0;
+      unsigned int U_Count = 0;
+      unsigned int Li_Count = 0;
+      unsigned int PositiveCharge = 0;
 
       OBAtomIterator atom_iter;
 
       for (OBAtom *a = mol.BeginAtom(atom_iter); a; a = mol.NextAtom(atom_iter))
         {
-          if (a->IsCarbon())
+          if (a->GetAtomicNum() == OBElements::Carbon)
 	    {
 	      C_Count++;
 	      AliasData *ad = (AliasData *) a->GetData("UserLabel");
@@ -460,11 +470,11 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 		  Me_Count++;
 		}
 	    }
-          else if (a->IsNitrogen())
+          else if (a->GetAtomicNum() == OBElements::Nitrogen)
             N_Count++;
-          else if (a->IsOxygen())
+          else if (a->GetAtomicNum() == OBElements::Oxygen)
             O_Count++;
-          else if (a->IsSulfur())
+          else if (a->GetAtomicNum() == OBElements::Sulfur)
             S_Count++;
           else if (a->GetAtomicNum() == FLUORINE_ATOMIC_NUM)
             F_Count++;
@@ -505,7 +515,7 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 	    {
 	      unsigned int a = b1->GetBeginAtomIdx();
 	      unsigned int b = b1->GetEndAtomIdx();
-	      if ( b1->GetBeginAtom()->IsHydrogen() || b1->GetEndAtom()->IsHydrogen() || b1->GetLength() == 0)
+	      if ( b1->GetBeginAtom()->GetAtomicNum() == OBElements::Hydrogen || b1->GetEndAtom()->GetAtomicNum() == OBElements::Hydrogen || b1->GetLength() == 0)
 		continue;
 	      OBBondIterator bond_iter2;
 	      for (OBBond *b2 = mol.BeginBond(bond_iter2); b2; b2 = mol.NextBond(bond_iter2))
@@ -514,7 +524,7 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 		    {
 		      unsigned int c = b2->GetBeginAtomIdx();
 		      unsigned int d = b2->GetEndAtomIdx();
-		      if ( b2->GetBeginAtom()->IsHydrogen() || b2->GetEndAtom()->IsHydrogen()  || b2->GetLength() == 0)
+		      if ( b2->GetBeginAtom()->GetAtomicNum() == OBElements::Hydrogen || b2->GetEndAtom()->GetAtomicNum() == OBElements::Hydrogen  || b2->GetLength() == 0)
 			continue;
 		      double angle;
 		      bool found = false;
@@ -557,8 +567,8 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
       */
       //cout<<C_Count<<" "<<N_Count<<" "<<O_Count<<" "<<F_Count<<" "<<S_Count<<" "<<Cl_Count<<" "<<Br_Count<<" "<<Si_Count<<" "<<U_Count<<" "<<Me_Count<<" "<<R_Count<<" "<<
       //Xx_Count<<" "<<num_rings<<" "<<num_aromatic<<" "<<molecule_statistics.fragments<<" "<<Num_Rings<<" "<<Num_HashBonds<<" "<<Num_WedgeBonds<<" "<<Num_DoubleBonds<<" "<<PositiveCharge<<endl;
-      int x[] = {C_Count,N_Count,O_Count,F_Count,S_Count,Cl_Count,Br_Count,Si_Count,U_Count,Me_Count,Li_Count,R_Count, Xx_Count,num_rings,num_aromatic,molecule_statistics.fragments,Num_Rings[5],Num_Rings[6],Num_HashBonds,Num_WedgeBonds,Num_DoubleBonds,PositiveCharge,n_letters,mol.NumAtoms(),mol.NumHvyAtoms(),mol.NumBonds()};
-      int n = sizeof(x)/sizeof(int);
+      unsigned int x[] = {C_Count,N_Count,O_Count,F_Count,S_Count,Cl_Count,Br_Count,Si_Count,U_Count,Me_Count,Li_Count,R_Count, Xx_Count,num_rings,num_aromatic,molecule_statistics.fragments,Num_Rings[5],Num_Rings[6],Num_HashBonds,Num_WedgeBonds,Num_DoubleBonds,PositiveCharge,n_letters,mol.NumAtoms(),mol.NumHvyAtoms(),mol.NumBonds()};
+      unsigned int n = sizeof(x)/sizeof(unsigned int);
       *confidence = confidence_function(x,n);
 
       if (confidence_parameters)
@@ -773,30 +783,15 @@ const std::string get_formatted_structure(
     create_molecule(mol, atom, bond, n_bond, avg_bond_length, molecule_statistics, format == "sdf" || format == "mol" || format == "sd" || format == "mdl", &confidence, superatom,
 		    n_letters, &confidence_parameters, verbose, brackets);
 
-    // Add hydrogens to the entire molecule to fill out implicit valence spots:
-    mol.AddHydrogens(true, false); // polarOnly, correctForPh
-    // Find all chiral atom centers:
-    mol.FindChiralCenters();
-
-    // Clear any indication of 2D "wedge" notation:
-    OBBondIterator bond_iter;
-
-    for (OBBond *b = mol.BeginBond(bond_iter); b; b = mol.NextBond(bond_iter))
+    FOR_ATOMS_OF_MOL(matom, mol)
       {
-        if (!b->GetBeginAtom()->IsChiral() && !b->GetEndAtom()->IsChiral())
-          {
-            //b->UnsetHash();
-            b->UnsetWedge();
-          }
-	if (!b->GetBeginAtom()->IsChiral() && (b->IsWedge() || b->IsHash()))
-	  {
-	    OBAtom* ba = b->GetBeginAtom();
-	    OBAtom* ea = b->GetEndAtom();
-	    b->SetBegin(ea);
-	    b->SetEnd(ba);
-	  }
+	OBAtomAssignTypicalImplicitHydrogens(&*matom);
       }
-
+    mol.SetHydrogensAdded(false);
+    // Add hydrogens to the entire molecule to fill out implicit valence spots:
+    bool ok = mol.AddHydrogens(true, false);
+    mol.DeleteData(OBGenericDataType::StereoData);
+    
     // Add single bonds based on atom proximity:
     mol.ConnectTheDots();
     // Copies each disconnected fragment as a separate OBMol:
@@ -804,6 +799,7 @@ const std::string get_formatted_structure(
     // Deletes all atoms except for the largest contiguous fragment:
     mol.StripSalts(MIN_A_COUNT);
 
+    
     if (show_confidence)
       {
         OBPairData *label = new OBPairData;
@@ -904,9 +900,8 @@ const std::string get_formatted_structure(
       }
 
     OBConversion conv;
-
+    conv.AddOption("w", conv.OUTOPTIONS);
     conv.SetOutFormat(format.c_str());
-    conv.Read(&mol);
 
     strstr << conv.WriteString(&mol, true);
 

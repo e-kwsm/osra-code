@@ -5,6 +5,6 @@ Name: @PACKAGE_NAME@
 Description: Chemical structure recognition library
 Version: @PACKAGE_VERSION@
 
-Requires: gocr ocrad openbabel-2.0 GraphicsMagick++
+Requires: gocr ocrad openbabel3 GraphicsMagick++
 Libs: -l@libdir@ @LIBS@
 Cflags: 

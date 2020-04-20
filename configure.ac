@@ -278,7 +278,7 @@ dnl openbabel library
 AX_PROBE_OBLIGATORY_LIBRARY(
 	[openbabel],
 	[openbabel/mol.h openbabel/obconversion.h openbabel/builder.h openbabel/alias.h openbabel/stereo/tetrahedral.h],
-	[/usr/include/openbabel-2.0 /usr/local/include/openbabel-2.0],
+	[/usr/include/openbabel3 /usr/local/include/openbabel3],
 	[custom location of openbabel/builder.h from OpenBabel (open source chemistry toolbox), see http://openbabel.sourceforge.net/wiki/Main_Page]
 )
 
@@ -530,6 +530,9 @@ AS_IF([test "${enable_static_linking:+set}" == "set"], [
 ])
 
 AX_TRY_LINK([openbabel], [
+	#include <openbabel/atom.h>
+	#include <openbabel/bond.h>
+	#include <openbabel/ring.h>
 	#include <openbabel/mol.h>
 	#include <openbabel/obconversion.h>
 	#include <openbabel/builder.h>
@@ -559,12 +562,9 @@ AX_TRY_LINK([openbabel], [
 	atom.GetFormalCharge();
 	atom.GetId();
 	atom.GetParent();
-	atom.IsCarbon();
+	atom.GetAtomicNum();
 	atom.IsChiral();
 	atom.IsHeteroatom();
-	atom.IsNitrogen();
-	atom.IsOxygen();
-	atom.IsSulfur();
 	atom.SetAtomicNum(0);
 	atom.SetData(&aliasData);
 	atom.SetFormalCharge(0);
@@ -574,17 +574,17 @@ AX_TRY_LINK([openbabel], [
 	bond.GetBeginAtom();
 	bond.GetBondOrder();
 	bond.GetFlags();
-	bond.IsDouble();
+	bond.GetBondOrder();
 	bond.IsHash();
 	bond.IsInRing();
-	bond.IsTriple();
+//	bond.IsTriple();
 	bond.IsWedge();
 	bond.SetBondOrder(0);
-	bond.UnsetAromatic();
-	bond.UnsetDown();
-	bond.UnsetHash();
-	bond.UnsetUp();
-	bond.UnsetWedge();
+//	bond.UnsetAromatic();
+//	bond.UnsetDown();
+//	bond.UnsetHash();
+//	bond.UnsetUp();
+//	bond.UnsetWedge();
 
 	ring.IsAromatic();
 

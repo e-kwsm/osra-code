@@ -38,30 +38,30 @@
 //      contains the statistical information about molecule used for analysis of recognition accuracy
 struct molecule_statistics_s
 {
-  // int: rotors
+  // unsigned int: rotors
   //    number of rotors in molecule
-  int rotors;
-  // int: num_fragments
+  unsigned int rotors;
+  // unsigned int: num_fragments
   //    number of contiguous fragments in molecule
-  int fragments;
-  // int: rings56
+  unsigned int fragments;
+  // unsigned int: rings56
   //    accumulated number of 5- and 6- rings in molecule
-  int rings56;
-  // int: rings456
+  unsigned int rings56;
+  // unsigned int: rings456
   //    accumulated number of 4, 5, and 6-member rings in molecule
-  int rings456;
-  // int: num_atoms
+  unsigned int rings456;
+  // unsigned int: num_atoms
   // number of atoms in molecule
-  int num_atoms;
-// int: num_bonds
+  unsigned int num_atoms;
+// unsigned int: num_bonds
   // number of bonds in molecule
-  int num_bonds;
-  // int: num_organic_non_carbon_atoms
+  unsigned int num_bonds;
+  // unsigned int: num_organic_non_carbon_atoms
   // number of organic atoms which are not carbon or hydrogen
-  int num_organic_non_carbon_atoms;
-  // int: num_small_angles
+  unsigned int num_organic_non_carbon_atoms;
+  // unsigned int: num_small_angles
   // number of bond angles smaller than 20 degrees
-  int num_small_angles;
+  unsigned int num_small_angles;
 };
 
 // typedef: molecule_statistics_t

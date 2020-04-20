@@ -71,7 +71,7 @@ http://www.gnu.org/software/ocrad/ocrad.html
 - TCLAP, Templatized C++ Command Line Parser Library, version 1.2.1,
 http://tclap.sourceforge.net/
 
-- OpenBabel, open source chemistry toolbox, please use openbabel-2.3.2-patched.tgz
+- OpenBabel, open source chemistry toolbox, please use openbabel-3-0-0-patched.tgz
 from osra.sf.net. It has been modified to save polymer-relevant data in MDL MOL format.
 
 - Poppler,  a PDF rendering library, version 0.41.0 was used successfully;
@@ -210,7 +210,7 @@ To configure GraphicsMagick I used the following options:
 
 Compile and install GraphicsMagick, GOCR, Potrace (libpotrace.a does not get install by default), TCLAP, OCRAD.
 
-Compiling OpenBabel version 2.3.0:
+Compiling OpenBabel version 3.0.0:
 First make sure zlib, eigen2, and libxml2 are installed. For libxml2 I used the following
 options for configure: --without-threads --disable-shared;
 

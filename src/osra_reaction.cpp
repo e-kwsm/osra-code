@@ -25,7 +25,7 @@
 #include <openbabel/mol.h>
 #include <openbabel/obconversion.h>
 #include <openbabel/reaction.h>
-#include <openbabel/shared_ptr.h> // shared_ptr<T> in global namespace
+#include <openbabel/generic.h>
 
 #include "osra_segment.h"
 #include "osra_reaction.h"
@@ -33,12 +33,6 @@
 
 using namespace OpenBabel;
 
-// openbabel/shared_ptr.h declares shared_ptr<T> in global namespace.
-// Here we encapsulate it into OpenBabel:: namespace, and use only fully specified
-// name OpenBabel::shared_ptr<T> in the code.
-namespace OpenBabel {
-  template<typename T> using shared_ptr = shared_ptr<T>;
-}
 
 //
 // Create a reaction representation for input vector of structures
@@ -63,13 +57,13 @@ std::string convert_page_to_reaction(
   OBReaction react;
   for (int j=0; j<reactants.size(); j++)
     {
-      OpenBabel::shared_ptr<OBMol> reactant(new OBMol);
+      std::shared_ptr<OBMol> reactant(new OBMol);
       conv->ReadString(reactant.get(), page_of_structures[reactants[j]]);
       react.AddReactant(reactant);
     }
   for (int j=0; j<products.size(); j++)
     {
-      OpenBabel::shared_ptr<OBMol> product(new OBMol);
+      std::shared_ptr<OBMol> product(new OBMol);
       conv->ReadString(product.get(), page_of_structures[products[j]]);
       react.AddProduct(product);
     }
