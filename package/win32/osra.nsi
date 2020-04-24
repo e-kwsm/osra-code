@@ -53,7 +53,7 @@ Section "osra (required)"
   
   ; Put file there
   File "osra-bin.exe"
-  File "pthreadGC2.dll"
+;  File "pthreadGC2.dll"
   File "README.txt"
   File "spelling.txt"
   File "superatom.txt"
@@ -122,7 +122,7 @@ Section "Uninstall"
 
   ; Remove files and uninstaller
   Delete $INSTDIR\osra-bin.exe
-  Delete $INSTDIR\pthreadGC2.dll
+;  Delete $INSTDIR\pthreadGC2.dll
   Delete $INSTDIR\README.txt
   Delete $INSTDIR\osra.bat
   Delete $INSTDIR\superatom.txt

@@ -422,11 +422,13 @@ AC_CHECK_LIB([pthread], [sem_init], [], [ac_lib_poppler=no])
 dnl These libraries are needed for static linking with poppler:
 AS_IF([test "${enable_static_linking:+set}" == "set"], [
 		AC_CHECK_LIB([z], [inflateEnd], [], [ac_lib_poppler=no])
-		AC_CHECK_LIB([bz2], [BZ2_bzBuffToBuffCompress], [], [ac_lib_poppler=no])
+		AC_CHECK_LIB([bz2], [BZ2_bzlibVersion], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([png],[png_create_read_struct], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([iconv], [libiconv_open], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([expat],[XML_ParserCreate], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([lcms], [cmsOpenProfileFromMem], [], [ac_lib_poppler=no])
+		AC_CHECK_LIB([tiff], [TIFFFdOpen], [], [ac_lib_poppler=no])
+		AC_CHECK_LIB([jpeg], [jpeg_destroy_compress], [], [ac_lib_poppler=no])
 ])
 
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], [], [ac_lib_poppler=no])
@@ -448,6 +450,7 @@ AX_TRY_LINK([poppler poppler-cpp], [
       	const char *d = im.const_data();
      }
 ], [], [osra_lib_poppler=no])
+
 
 AS_IF([test "${osra_lib_poppler}" != "yes"], [
 	AC_MSG_ERROR([POPPLER API check failed; make sure you have installed poppler-devel package or check config.log])

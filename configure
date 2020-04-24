@@ -7409,9 +7409,9 @@ else
   ac_lib_poppler=no
 fi
 
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BZ2_bzBuffToBuffCompress in -lbz2" >&5
-$as_echo_n "checking for BZ2_bzBuffToBuffCompress in -lbz2... " >&6; }
-if ${ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress+:} false; then :
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BZ2_bzlibVersion in -lbz2" >&5
+$as_echo_n "checking for BZ2_bzlibVersion in -lbz2... " >&6; }
+if ${ac_cv_lib_bz2_BZ2_bzlibVersion+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -7425,27 +7425,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char BZ2_bzBuffToBuffCompress ();
+char BZ2_bzlibVersion ();
 int
 main ()
 {
-return BZ2_bzBuffToBuffCompress ();
+return BZ2_bzlibVersion ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress=yes
+  ac_cv_lib_bz2_BZ2_bzlibVersion=yes
 else
-  ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress=no
+  ac_cv_lib_bz2_BZ2_bzlibVersion=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress" >&5
-$as_echo "$ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress" >&6; }
-if test "x$ac_cv_lib_bz2_BZ2_bzBuffToBuffCompress" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_bz2_BZ2_bzlibVersion" >&5
+$as_echo "$ac_cv_lib_bz2_BZ2_bzlibVersion" >&6; }
+if test "x$ac_cv_lib_bz2_BZ2_bzlibVersion" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBBZ2 1
 _ACEOF
@@ -7639,6 +7639,100 @@ if test "x$ac_cv_lib_lcms_cmsOpenProfileFromMem" = xyes; then :
 _ACEOF
 
   LIBS="-llcms $LIBS"
+
+else
+  ac_lib_poppler=no
+fi
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for TIFFFdOpen in -ltiff" >&5
+$as_echo_n "checking for TIFFFdOpen in -ltiff... " >&6; }
+if ${ac_cv_lib_tiff_TIFFFdOpen+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ltiff  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char TIFFFdOpen ();
+int
+main ()
+{
+return TIFFFdOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_tiff_TIFFFdOpen=yes
+else
+  ac_cv_lib_tiff_TIFFFdOpen=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tiff_TIFFFdOpen" >&5
+$as_echo "$ac_cv_lib_tiff_TIFFFdOpen" >&6; }
+if test "x$ac_cv_lib_tiff_TIFFFdOpen" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBTIFF 1
+_ACEOF
+
+  LIBS="-ltiff $LIBS"
+
+else
+  ac_lib_poppler=no
+fi
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for jpeg_destroy_compress in -ljpeg" >&5
+$as_echo_n "checking for jpeg_destroy_compress in -ljpeg... " >&6; }
+if ${ac_cv_lib_jpeg_jpeg_destroy_compress+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-ljpeg  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char jpeg_destroy_compress ();
+int
+main ()
+{
+return jpeg_destroy_compress ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_jpeg_jpeg_destroy_compress=yes
+else
+  ac_cv_lib_jpeg_jpeg_destroy_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jpeg_jpeg_destroy_compress" >&5
+$as_echo "$ac_cv_lib_jpeg_jpeg_destroy_compress" >&6; }
+if test "x$ac_cv_lib_jpeg_jpeg_destroy_compress" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBJPEG 1
+_ACEOF
+
+  LIBS="-ljpeg $LIBS"
 
 else
   ac_lib_poppler=no
@@ -7901,6 +7995,7 @@ else
   osra_lib_poppler=no
 
 fi
+
 
 
 
