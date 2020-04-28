@@ -420,7 +420,7 @@ osra_lib_poppler=yes
 AC_CHECK_LIB([pthread], [sem_init], [], [ac_lib_poppler=no])
 
 dnl These libraries are needed for static linking with poppler:
-AS_IF([test "${enable_static_linking:+set}" == "set"], [
+AS_IF([test "${enable_static_linking:+set}" == "set"  -o "$build_os" == "darwin"], [
 		AC_CHECK_LIB([z], [inflateEnd], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([bz2], [BZ2_bzlibVersion], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([png],[png_create_read_struct], [], [ac_lib_poppler=no])
@@ -519,7 +519,7 @@ osra_lib_openbabel=yes
 AS_IF([test "$build_os" == "mingw"], [LIBS="-lws2_32 ${LIBS}"])
 
 dnl These libraries are needed for static linking with openbabel:
-AS_IF([test "${enable_static_linking:+set}" == "set"], [
+AS_IF([test "${enable_static_linking:+set}" == "set"  -o "$build_os" == "darwin"], [
 	AS_IF([test "$build_os" == "darwin"], [
 		dnl Special case for OSX: the libraries should be at fixed locations:
 		AC_CHECK_LIB([inchi], [GetINCHI])
@@ -650,7 +650,7 @@ AS_IF([test "${enable_graphicsmagick_config:+set}" != "set"], [
 
 	CPPFLAGS="`${GRAPHICS_MAGICK_CONFIG} --cppflags` ${CPPFLAGS}"
 
-	AS_IF([test "${enable_static_linking:+set}" == "set"], [
+	AS_IF([test "${enable_static_linking:+set}" == "set" -o "$build_os" == "darwin"], [
 		dnl Here goes statically linking setup section.
 		dnl Note: This hack to link statically against GraphicsMagick is not portable: the list of libraries should be discovered via pkg-config.
 		LIBS="`${GRAPHICS_MAGICK_CONFIG} --libs` ${LIBS}"
@@ -659,7 +659,7 @@ AS_IF([test "${enable_graphicsmagick_config:+set}" != "set"], [
 		)
 	])
 ], [
-	AS_IF([test "${enable_static_linking:+set}" == "set" -a "$build_os" == "darwin"], [
+	AS_IF([test "${enable_static_linking:+set}" == "set" -o "$build_os" == "darwin"], [
 		dnl Special case for OSX: the libraries should be at fixed locations:
 		LIBS="-ljpeg ${MACPORTSLIBS}/liblcms.a ${MACPORTSLIBS}/libtiff.a ${MACPORTSLIBS}/libfreetype.a ${MACPORTSLIBS}/libjasper.a ${MACPORTSLIBS}/libpng.a ${MACPORTSLIBS}/libbz2.a ${MACPORTSLIBS}/libz.a ${LIBS}"
 	])

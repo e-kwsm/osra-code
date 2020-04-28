@@ -16,7 +16,8 @@
  this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
  St, Fifth Floor, Boston, MA 02110-1301, USA
  *****************************************************************************/
-
+#include "config.h"
+#ifdef HAVE_TESSERACT_LIB
 #include <stddef.h> // NULL
 #include <stdlib.h> // free()
 #include <ctype.h> // isalnum()
@@ -55,3 +56,5 @@ char osra_tesseract_ocr(unsigned char *pixmap, int width, int height, const std:
 
   return result;
 }
+
+#endif

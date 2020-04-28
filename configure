@@ -7360,7 +7360,7 @@ else
 fi
 
 
-if test "${enable_static_linking:+set}" == "set"; then :
+if test "${enable_static_linking:+set}" == "set"  -o "$build_os" == "darwin"; then :
 
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for inflateEnd in -lz" >&5
 $as_echo_n "checking for inflateEnd in -lz... " >&6; }
@@ -8446,7 +8446,7 @@ if test "$build_os" == "mingw"; then :
   LIBS="-lws2_32 ${LIBS}"
 fi
 
-if test "${enable_static_linking:+set}" == "set"; then :
+if test "${enable_static_linking:+set}" == "set"  -o "$build_os" == "darwin"; then :
 
 	if test "$build_os" == "darwin"; then :
 
@@ -9021,7 +9021,7 @@ fi
 
 	CPPFLAGS="`${GRAPHICS_MAGICK_CONFIG} --cppflags` ${CPPFLAGS}"
 
-	if test "${enable_static_linking:+set}" == "set"; then :
+	if test "${enable_static_linking:+set}" == "set" -o "$build_os" == "darwin"; then :
 
 						LIBS="`${GRAPHICS_MAGICK_CONFIG} --libs` ${LIBS}"
 		if test "$build_os" == "cygwin"; then :
@@ -9033,7 +9033,7 @@ fi
 
 else
 
-	if test "${enable_static_linking:+set}" == "set" -a "$build_os" == "darwin"; then :
+	if test "${enable_static_linking:+set}" == "set" -o "$build_os" == "darwin"; then :
 
 				LIBS="-ljpeg ${MACPORTSLIBS}/liblcms.a ${MACPORTSLIBS}/libtiff.a ${MACPORTSLIBS}/libfreetype.a ${MACPORTSLIBS}/libjasper.a ${MACPORTSLIBS}/libpng.a ${MACPORTSLIBS}/libbz2.a ${MACPORTSLIBS}/libz.a ${LIBS}"
 
