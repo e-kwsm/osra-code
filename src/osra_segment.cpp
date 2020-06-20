@@ -711,9 +711,9 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
       }
 
   /*for (int i=0; i<n; i++)
-   cout<<y[i]<<" ";
-  cout<<endl;
-  */
+    std::cout<<y[i]<<" ";
+    std::cout<<std::endl;*/
+  
   if (pos<3) return false;
   int midpoint = std::min(int(0.75 * n), pos - 3);
   if (midpoint<0) return false;
@@ -724,7 +724,7 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
   avg /=int(midpoint);
 
   bool flat = true;
-  for (int i=0; i<midpoint; i++)
+  for (int i=2; i<midpoint; i++)
     if (fabs(y[i]-avg)>2) flat = false;
 
   bool left = true;
@@ -737,7 +737,7 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
   bool peak = true;
   if (top<1.5*avg || top-avg<2 || n-pos<3 || top-y[n-1]<2 || pos<n/2 || pos<5) peak = false;
 
-  //cout<<flat<<" "<<left<<" "<<right<<" "<<peak<<" "<<pos<<endl;
+  //std::cout<<flat<<" "<<left<<" "<<right<<" "<<peak<<" "<<pos<<std::endl;
 
   return flat && left && right && peak;
 }
@@ -772,23 +772,27 @@ void find_arrows_pluses(std::vector<std::vector<point_t> > &margins,
 	      if (pos>=len) pos -= len;
 	      int after=pos+1;
 	      int before=pos-1;
+	      int before2 = pos - 2;
 	      if (after>=len) after -=len;
 	      if (before<0) before +=len;
-	      if (hist[before]<hist[pos] && hist[after]<hist[pos] && hist[pos]>=top_value/2)  // find all peaks at least half as high as the top-most
+	      if (before2<0) before2 +=len;
+	      if ( (hist[before]<hist[pos] || (hist[before] == hist[pos] && hist[before2] < hist[pos]))
+		  && hist[after]<hist[pos] && hist[pos]>=top_value/2)  // find all peaks at least half as high as the top-most
 		{
 		  peaks.push_back(pos);
 		  values.push_back(hist[pos]);
 		}
 	    }
-
 	  if (peaks.size() == 2   && abs(len/2 - abs(peaks[1]-peaks[0]))<=1)  // only two peaks are present at 180 degrees
 	    {
 	      bool ba=bulge(tail,head,segments[i]);
 	      bool bb=bulge(head,tail,segments[i]);
-	      //cout<<tail.x<<" "<<tail.y<<" "<<ba<<" "<<bb<<endl;
-	      if (ba || bb)
+	      double l = distance(tail.x, tail.y, head.x, head.y);
+	      //std::cout<<tail.x<<" "<<tail.y<<" "<<ba<<" " << bb << std::endl;
+	      if ((ba || bb) && l > 2 * MAX_FONT_HEIGHT)
 		{
 		  // we found an arrow!
+		  //std::cout<<tail.x<<" "<<tail.y<<std::endl;
 		  arrow_t arrow(head,tail,min_x,min_y,max_x,max_y);
 		  if (bb)
 		    {

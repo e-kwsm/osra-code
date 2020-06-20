@@ -69,7 +69,7 @@ typedef struct box_s box_t;
 struct arrow_s
 {
 arrow_s(point_t _head, point_t _tail,int _min_x,int _min_y,int _max_x,int _max_y) :
-  head(_head),tail(_tail),min_x(_min_x),min_y(_min_y),max_x(_max_x),max_y(_max_y),linebreak(false),reversible(false),remove(false),agent("") {}
+  head(_head),tail(_tail),min_x(_min_x),min_y(_min_y),max_x(_max_x),max_y(_max_y),linebreak(false),linebreak_before(false),reversible(false),remove(false),agent("") {}
   arrow_s() {}
   // point_t: tail, head
   // tail and head of an arrow as points
@@ -77,6 +77,7 @@ arrow_s(point_t _head, point_t _tail,int _min_x,int _min_y,int _max_x,int _max_y
   int min_x,min_y,max_x,max_y;
   std::string agent;
   bool linebreak;
+  bool linebreak_before;
   bool reversible;
   bool remove;
 };
