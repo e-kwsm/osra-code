@@ -804,8 +804,9 @@ void find_arrows_pluses(std::vector<std::vector<point_t> > &margins,
 		  segments[i].clear();
 		}
 	    }
-
-	  if (peaks.size() == 4  && (double(values[1])/values[0]>0.8 || values[0]-values[1]<=2)  && (double(values[2])/values[0]>0.8  || values[0]-values[2]<=2) && (double(values[3])/values[0]>0.8 || values[0]-values[3]<=2))
+	  //std::cout << center.x << " " << center.y << std::endl;
+	  //std::cout << "  " << values[0] << " " << values[1] << " " << values[2] <<" "<< values[3] << std::endl;
+	  if (peaks.size() == 4  && (double(values[1])/values[0]>0.8 || values[0]-values[1]<=5)  && (double(values[2])/values[0]>0.8  || values[0]-values[2]<=5) && (double(values[3])/values[0]>0.8 || values[0]-values[3]<=5))
 	    {
 	      bool first=false, second=false, third=false, fourth=false;
 	      for (int j=0; j<4; j++)
@@ -815,6 +816,11 @@ void find_arrows_pluses(std::vector<std::vector<point_t> > &margins,
 		  if (abs(len/2-peaks[j])<=1) third=true;
 		  if (abs(3*len/4-peaks[j])<=1) fourth=true;
 		}
+	      /* for(int k=0; k<len; k++)
+		{
+		  std::cout << hist[k] << " ";
+		}
+		std::cout << std::endl;*/
 	      for (int j=0; j<peaks.size(); j++)          // check outside of the peaks is essentially zero
 		for (int k=peaks[j]-2; k<=peaks[j]+2; k++)
 		  {
@@ -825,8 +831,11 @@ void find_arrows_pluses(std::vector<std::vector<point_t> > &margins,
 		  }
 
 	      bool low=true;
-	      for(int k=0; k<len; k++)
-		if (hist[k]>3) low=false;
+	      /* for(int k=0; k<len; k++)
+		{
+		  if (hist[k]>3) low=false;
+		  }*/
+	      //std::cout << "  " << first <<" "<<second << " " << third << " " << low << std::endl;
 	      if (first && second && third && fourth && low)
 		{
 		  // we found a plus!

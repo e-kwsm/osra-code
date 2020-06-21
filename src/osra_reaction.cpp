@@ -403,7 +403,7 @@ void arrange_structures_between_arrows_before(
               if (!smi.empty())
                   arrows[j].agent += " OSRA_AGENT_SMILES="+smi;
 	    }
-	  else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r<rt)
+	  else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r<rt && page_of_boxes[i].x2 < arrows[j].tail.x)
 	    {
 	      rt = r;
 	      i_min = i;
@@ -469,7 +469,7 @@ void arrange_structures_between_arrows_after(
 		      previous_bottom = page_of_boxes[i].y2;
 		    }
 		}
-	      else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r < rh)
+	      else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r < rh && page_of_boxes[i].x1 > arrows[j].head.x)
 		{
 		  rh = r;
 		  i_min = i;
@@ -508,6 +508,7 @@ void arrange_plus_sings_between_boxes(const std::vector<std::vector<int> > &befo
 	    box_t b = page_of_boxes[k];
 	    for (int m=0; m<pluses.size(); m++)
 	      {
+		//std::cout << pluses[m].center.x << " " << pluses[m].center.y << std::endl;
 		//double d=distance_from_bond_y((a.x1+a.x2)/2,(a.y1+a.y2)/2,(b.x1+b.x2)/2,(b.y1+b.y2)/2,pluses[m].x, pluses[m].y);
                   if (pluses[m].center.y > std::max(a.y1, b.y1) &&
                       pluses[m].center.y < std::min(a.y2, b.y2) &&
@@ -617,10 +618,7 @@ void arrange_reactions(std::vector<arrow_t> &arrows, const std::vector<box_t> &p
       arrange_structures_between_arrows_after(arrow_groups[i],after_group,before_group,page_of_boxes,page_of_structures, max_distance_between_arrows);
 
 
-      sort_boxes_from_arrows(before_group,after_group,page_of_boxes,true, max_distance_between_arrows);
-      sort_boxes_from_arrows(after_group,before_group,page_of_boxes,false, max_distance_between_arrows);
-      
-      /* for (int ii=0;ii<before_group.size(); ii++)
+      /*for (int ii=0;ii<before_group.size(); ii++)
 	{
 	  for (int j=0; j<before_group[ii].size(); j++)
 	    std::cout<<before_group[ii][j]<<" ";
@@ -630,6 +628,11 @@ void arrange_reactions(std::vector<arrow_t> &arrows, const std::vector<box_t> &p
 	  std::cout<<std::endl;
 	}
       */
+      
+      sort_boxes_from_arrows(before_group,after_group,page_of_boxes,true, max_distance_between_arrows);
+      sort_boxes_from_arrows(after_group,before_group,page_of_boxes,false, max_distance_between_arrows);
+      
+   
       for (int j=0; j<arrow_groups[i].size(); j++)
 	arrows.push_back(arrow_groups[i][j]);
 
