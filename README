@@ -74,7 +74,7 @@ http://tclap.sourceforge.net/
 - OpenBabel, open source chemistry toolbox, please use openbabel-3-0-0-patched.tgz
 from osra.sf.net. It has been modified to save polymer-relevant data in MDL MOL format.
 
-- Poppler,  a PDF rendering library, version 0.41.0 was used successfully;
+- Poppler,  a PDF rendering library, version 0.73.0 was used successfully;
 if installing from RPM the following packages are needed:
 poppler-cpp-devel
 poppler-cpp
@@ -130,8 +130,16 @@ make; make install
 
 POPPLER:
 The following flags were used to build static library:
-./configure --disable-libtiff --disable-libjpeg --disable-libpng --disable-cairo-output --disable-poppler-glib --disable-poppler-qt4  --disable-poppler-qt5 --disable-gtk-test --disable-utils --disable-shared
+cmake3  -DCMAKE_INSTALL_PREFIX=/usr/local/ -DBUILD_GTK_TESTS=OFF -DBUILD_QT5_TESTS=OFF -DENABLE_UTILS=OFF -DENABLE_GLIB=OFF -DENABLE_QT5=OFF -DBUILD_SHARED_LIBS=OFF ..
 poppler may require fontconfig, expat and freetype to be installed.
+To build the static libpoppler you may have to modify the CMakeLists.txt:
+patch CMakeLists.txt -o CMakeLists.txt.patched <<EOF
+423a424
+>   set(poppler_LIBS \${poppler_LIBS} expat)
+424a426,427
+> set(poppler_LIBS \${poppler_LIBS} \${FREETYPE_LIBRARIES})
+> set(poppler_LIBS \${poppler_LIBS} bz2)
+EOF
 
 libosra: You can create a library version of OSRA (libosra.a and one of the
 following - libosra.so, libosra.dylib, or libosra.dll) by adding

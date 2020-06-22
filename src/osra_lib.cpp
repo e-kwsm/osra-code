@@ -511,15 +511,25 @@ Image process_pdf_page(poppler::document* doc,  poppler::page_renderer &r, int l
       for (int col = 0; col < im.width(); ++col)
 	{
 	  int offset = row * bytes_per_row + col * bytes_per_pixel;
-	  int r = -1, g = -1, b = -1, a = -1;
+	  unsigned char r = -1, g = -1, b = -1, a = -1;
 	      switch(im.format())
 		{
-		case poppler::image::format_mono : r = g = b = int(d[offset]); break;
-		case poppler::image::format_rgb24  : r = int(d[offset]); g = int(d[offset+1]); b = int(d[offset+2]); break;
-		case poppler::image::format_argb32 : r = int(d[offset]); g = int(d[offset+1]); b = int(d[offset+2]); a = int(d[offset+3]); break;
+		case poppler::image::format_mono : r = g = b = *reinterpret_cast<const unsigned char *>(d + offset); break;
+		case poppler::image::format_gray8 : r = g = b = *reinterpret_cast<const unsigned char *>(d + offset); break;
+		case poppler::image::format_rgb24  :
+		  r = *reinterpret_cast<const unsigned char *>(d + offset);
+		  g = *reinterpret_cast<const unsigned char *>(d + offset + 1);
+		  b = *reinterpret_cast<const unsigned char *>(d + offset + 2); 
+		  break;
+		case poppler::image::format_argb32 :
+		  const unsigned int pixel = *reinterpret_cast<const unsigned int *>(d + offset);
+		  r = (pixel >> 16) & 0xff;
+		  g = (pixel >> 8) & 0xff;
+		  b = pixel & 0xff;
+		  break;
 		}
 	      if (r >= 0 && g >= 0 && b >= 0)
-		image.pixelColor(col, row, ColorRGB(double(r) / 128, double(g) / 128, double(b) / 128));
+		image.pixelColor(col, row, ColorRGB(double(r) / 255, double(g) / 255, double(b) / 255));
 	}
     }
   return image;
@@ -756,7 +766,11 @@ int osra_process_image(
       Image image;
       double page_scale=1;
       poppler::page_renderer poppler_renderer;
-
+      poppler_renderer.set_image_format(poppler::image::format_enum::format_gray8);
+      //poppler_renderer.set_line_mode(poppler::page_renderer::line_mode_enum::line_solid);
+      //poppler_renderer.set_render_hint(poppler::page_renderer::render_hint::antialiasing);
+      //poppler_renderer.set_render_hint(poppler::page_renderer::render_hint::text_antialiasing);
+      //poppler_renderer.set_render_hint(poppler::page_renderer::render_hint::text_hinting);
       int ttt = 0;
 
       if (verbose)
