@@ -403,7 +403,7 @@ void arrange_structures_between_arrows_before(
               if (!smi.empty())
                   arrows[j].agent += " OSRA_AGENT_SMILES="+smi;
 	    }
-	  else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r<rt && page_of_boxes[i].x2 < arrows[j].tail.x)
+	  else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r<rt && rx4 < 0)
 	    {
 	      rt = r;
 	      i_min = i;
@@ -442,11 +442,11 @@ void arrange_structures_between_arrows_after(
       if (arrows[j].linebreak)	p.x=0;
       if (before[j].empty()) continue;
       box_t box_before = page_of_boxes[before[j][0]];
+      double l = distance(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y);
       for (int i=0; i<page_of_boxes.size(); i++)
 	{
 	  double r = distance_from_box(p, page_of_boxes[i]);
 	  double ry = distance_from_bond_y(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y,(page_of_boxes[i].x2+page_of_boxes[i].x1)/2,(page_of_boxes[i].y2+page_of_boxes[i].y1)/2);
-	  double l = distance(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y);
 	  double rx1 = distance_from_bond_x_a(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y,page_of_boxes[i].x1,page_of_boxes[i].y1);
 	  double rx2 = distance_from_bond_x_a(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y,page_of_boxes[i].x1,page_of_boxes[i].y2);
 	  double rx3 = distance_from_bond_x_a(arrows[j].tail.x,arrows[j].tail.y,arrows[j].head.x,arrows[j].head.y,page_of_boxes[i].x2,page_of_boxes[i].y1);
@@ -469,7 +469,7 @@ void arrange_structures_between_arrows_after(
 		      previous_bottom = page_of_boxes[i].y2;
 		    }
 		}
-	      else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r < rh && page_of_boxes[i].x1 > arrows[j].head.x)
+	      else if (fabs(ry) < std::min(page_of_boxes[i].x2 - page_of_boxes[i].x1, page_of_boxes[i].y2 - page_of_boxes[i].y1) && r < rh && rx1 > l)
 		{
 		  rh = r;
 		  i_min = i;
