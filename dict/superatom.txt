@@ -19,6 +19,7 @@ NO2      N(=O)=O
 N(OH)CH3 N(O)C
 SO3H     S(=O)(=O)O
 COOH     C(=O)O
+COONa	 C(=O)O[Na]
 nBu      CCCC
 EtO      OCC
 OiBu     OCC(C)C
@@ -170,6 +171,7 @@ TMS [Si](C)(C)(C)
 COCOOCH2CH3 C(=O)C(=O)OCC
 OCH2CN OCC#N
 
+SiMe3  [Si](C)(C)C
 
 Xx [*]
 X  [*]

@@ -41,6 +41,8 @@ mH  N
 NN  N
 hN  N
 Nh  N
+N*  N
+NlH2 N
 
 OH  O  
 oH  O  
@@ -62,6 +64,12 @@ nU  O
 UnH O
 nUH O
 HOl O
+IO O
+OI O
+nH O
+nHH O
+QH O
+Ol O
 
 Meo MeO 
 oMe MeO  
@@ -114,6 +122,7 @@ OEl EtO
 OC2H EtO
 OCH2CH3 EtO
 CH3CH2O EtO
+OElH EtO
 
 olgU OiBu
 oleU OiBu
@@ -138,6 +147,7 @@ HOOC COOH
 CO2n COOH
 co2H COOH
 CO2  COOH
+COOl COOH
 
 
 AC Ac
@@ -160,6 +170,7 @@ nCO AcO
 Rco AcO
 oRc AcO
 OAC AcO
+oAC AcO
 
 Bl Br
 el Br
@@ -180,6 +191,14 @@ MR Me
 Me Me
 H2C Me
 3C Me
+Cm Me
+GH8 Me
+CHl Me
+Y* Me
+H* Me
+Cm3 Me
+CH* Me
+H*C Me
 
 pl Ar
 nl Ar
@@ -216,6 +235,7 @@ O2S SO2
 
 lH H
 1H H
+lI H
 
 AcNH NHAc
 AcHN NHAc
@@ -267,6 +287,10 @@ BZC BzO
 EBZO BzO
 CBZ BzO
 B2C BzO
+CUhZ BzO
+ChuZ BzO
+CuhZ BzO
+Chu2 BzO
 
 Sl Si
 
@@ -296,6 +320,9 @@ CH3CH2 Et
 C2H5 Et
 H5C2 Et
 OBn BnO
+O8n BnO
+8nO BnO
+BllO BnO
 HNZ ZNH
 ZHN ZNH
 HNAm AmNH
@@ -451,6 +478,9 @@ OCPh3 Ph3CO
 SO2CH3 SO2Me
 H3CO2S SO2Me
 CH3SO2 SO2Me
+SQ2me SO2Me
+Sol SO2Me
+
 POIOEII2 POOEt2
 SO3NI SO3Na
 OSO2Me MsO
@@ -476,3 +506,13 @@ PMRN PMBN
 ** Xx
 *** Xx
 
+
+COnM* COONa
+CnoN COONa
+QOC COONa
+NDOC COONa
+
+SlMe3 SiMe3
+SMe3  SiMe3
+
+m9    [Mg]
