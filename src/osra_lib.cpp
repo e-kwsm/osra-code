@@ -431,7 +431,7 @@ void split_fragments_and_assemble_structure_record(
               if (molecule_statistics.fragments > 0 && molecule_statistics.fragments < MAX_FRAGMENTS
 		  && molecule_statistics.num_atoms>MIN_A_COUNT && molecule_statistics.num_bonds>0
 		  )
-                {
+                {    
 		  if ((molecule_statistics.rings56 > 0 || molecule_statistics.num_organic_non_carbon_atoms > 0)
 		      && molecule_statistics.num_bonds>MIN_B_COUNT
 		      && molecule_statistics.num_small_angles < 3
@@ -465,11 +465,12 @@ void split_fragments_and_assemble_structure_record(
 			    }
 			  array_of_images[res_iter].push_back(tmp);
 			}
+		    
+		      total_boxes++;
+		      total_confidence += confidence;
+		      if (verbose)
+			std::cout << "Result: " << res_iter << " " << structure << " " << confidence << std::endl;
 		    }
-                  total_boxes++;
-                  total_confidence += confidence;
-		  if (verbose)
-                    std::cout << "Result: " << res_iter << " " << structure << " " << confidence << std::endl;
                 }
             }
         }
