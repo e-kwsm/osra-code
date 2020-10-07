@@ -22,6 +22,8 @@
 //
 
 #include <iostream> // std::ostream, std::cout
+#include <fstream> 
+#include <queue>
 
 #include "osra.h"
 #include "osra_common.h"
@@ -29,51 +31,6 @@
 #include "osra_labels.h"
 #include "osra_ocr.h"
 
-unsigned int distance_between_points(const point_t &p1, const point_t &p2)
-{
-  return std::max(abs(p1.x - p2.x), abs(p1.y - p2.y));
-}
-
-unsigned int distance_between_segments(const std::vector<point_t> &s1, const std::vector<point_t> &s2)
-{
-  int r = INT_MAX;
-  int d;
-
-  for (std::vector<point_t>::const_iterator i = s1.begin(); i != s1.end(); i++)
-    for (std::vector<point_t>::const_iterator j = s2.begin(); j != s2.end(); j++)
-      {
-        d = distance_between_points(*i, *j);
-        if (d < r)
-          r = d;
-      }
-
-  /*
-  unsigned int ii, jj;
-  #pragma omp parallel
-  {
-  	int priv_min = INT_MAX;
-  #pragma omp for
-  	for (ii = 0; ii < s1.size(); ii++) {
-  		for (jj = 0; jj < s2.size(); jj++) {
-  			int d = distance_between_points(s1[ii], s2[jj]);
-  			if (d < priv_min)
-  				priv_min = d;
-  		}
-  	}
-
-  	//#pragma omp flush (r)
-  	if (priv_min < r) {
-  #pragma omp critical
-  		{
-  			if (priv_min < r)
-  				r = priv_min;
-  		}
-  	}
-  }
-  */
-
-  return r;
-}
 
 void find_connected_components(const Image &image, double threshold, const ColorGray &bgColor,
                                std::vector<std::list<point_t> > &segments,
@@ -162,41 +119,6 @@ void find_connected_components(const Image &image, double threshold, const Color
         }
 }
 
-unsigned int area_ratio(unsigned int a, unsigned int b)
-{
-  double r = std::max(a, b) / std::min(a, b);
-  return (unsigned int) r;
-}
-
-void build_distance_matrix(const std::vector<std::vector<point_t> > &margins, unsigned int max_dist,
-                           std::vector<std::vector<int> > &distance_matrix,
-                           std::vector<std::vector<int> > &features,
-                           const std::vector<std::list<point_t> > &segments,
-                           unsigned int max_area_ratio, std::vector<std::vector<int> > &area_matrix)
-{
-  unsigned int d;
-  unsigned int ar;
-
-  for (unsigned int s1 = 0; s1 < margins.size(); s1++)
-    for (unsigned int s2 = s1 + 1; s2 < margins.size(); s2++)
-      if (distance_between_points(margins[s1].front(), margins[s2].front()) < (PARTS_IN_MARGIN
-          * margins[s1].size() + PARTS_IN_MARGIN * margins[s2].size()) / 2 + max_dist)
-        {
-          d = distance_between_segments(margins[s1], margins[s2]);
-          if (d < max_dist)
-            {
-              distance_matrix[s1][s2] = d;
-              distance_matrix[s2][s1] = d;
-              ar = area_ratio(segments[s1].size(), segments[s2].size());
-              //cout << ar << endl;
-              area_matrix[s1][s2] = ar;
-              area_matrix[s2][s1] = ar;
-              if (ar < max_area_ratio && d < max_dist)
-                features[ar][d]++;
-            }
-        }
-}
-
 void build_explicit_clusters(
     const std::list<std::list<int> > &clusters,
     const std::vector<std::list<point_t> > &segments,
@@ -249,68 +171,6 @@ void remove_separators(std::vector<std::list<point_t> > &segments,
       if (sright != sleft)
         aspect = 1. * (sbottom - stop+1) / (sright - sleft+1); // where did right and left come from?
       if (aspect > max_aspect || aspect < 1. / max_aspect)
-        {
-          s = segments.erase(s);
-          m = margins.erase(m);
-        }
-      else
-        {
-          s++;
-          m++;
-        }
-    }
-}
-
-void remove_tables_old(std::vector<std::list<point_t> > &segments,
-                       std::vector<std::vector<point_t> > &margins, unsigned int size)
-{
-  std::vector<std::list<point_t> >::iterator s;
-  std::vector<std::vector<point_t> >::iterator m;
-  s = segments.begin();
-  m = margins.begin();
-
-  while (s != segments.end() && m != margins.end())
-    {
-      if (m->size() <= size)
-        {
-          s++;
-          m++;
-          continue;
-        }
-
-      int top = INT_MAX, left = INT_MAX, bottom = 0, right = 0;
-      int border_count = 0;
-      for (std::vector<point_t>::iterator p = m->begin(); p != m->end(); p++)
-        {
-          if (p->x < left)
-            left = p->x;
-          if (p->x > right)
-            right = p->x;
-          if (p->y < top)
-            top = p->y;
-          if (p->y > bottom)
-            bottom = p->y;
-        }
-
-      double aspect = FLT_MAX;
-      if (right != left)
-        aspect = 1. * (bottom - top) / (right - left);
-      if (aspect >= MAX_ASPECT || aspect <= MIN_ASPECT)
-        {
-          s++;
-          m++;
-          continue;
-        }
-
-      for (std::vector<point_t>::iterator p = m->begin(); p != m->end(); p++)
-        if (p->x - left < 2 || right - p->x < 2 || p->y - top < 2 || bottom - p->y < 2)
-          {
-            border_count++;
-          }
-
-      //cout << border_count << " " << 2 * (right - left) + 2 * (bottom - top) << endl;
-
-      if (border_count > BORDER_COUNT)
         {
           s = segments.erase(s);
           m = margins.erase(m);
@@ -540,145 +400,6 @@ void remove_tables(std::vector<std::list<point_t> > &segments, std::vector<std::
         }
     }
 }
-
-void assemble_clusters(
-    const std::vector<std::vector<point_t> > &margins, int dist,
-    const std::vector<std::vector<int> > &distance_matrix, std::vector<int> &avail, bool text,
-    const std::vector<std::vector<int> > &area_matrix,
-    std::list<std::list<int> > &clusters)
-{
-  clusters.clear();
-  std::list<int> bag;
-
-  for (unsigned int s = 0; s < margins.size(); s++)
-    if (avail[s] == 1)
-      {
-        bag.push_back(s);
-        avail[s] = 2;
-        std::list<int> new_cluster;
-        while (!bag.empty())
-          {
-            int c = bag.back();
-            bag.pop_back();
-            new_cluster.push_back(c);
-            avail[c] = 0;
-            for (unsigned int i = 0; i < margins.size(); i++)
-              if (avail[i] == 1 && distance_matrix[c][i] < dist)
-                // && (!text || area_matrix[i][c] <= 10))
-                {
-                  bag.push_back(i);
-                  avail[i] = 2;
-                }
-          }
-        clusters.push_back(new_cluster);
-      }
-}
-
-void remove_text_blocks(const std::list<std::list<int> > &clusters,
-                        const std::vector<std::list<point_t> > &segments, std::vector<int> &avail)
-{
-  for (std::list<std::list<int> >::const_iterator c = clusters.begin(); c != clusters.end(); c++)
-    {
-      unsigned int area = 0, square_area = 0;
-      double ratio = 0, aspect = 0;
-      int top = INT_MAX, left = INT_MAX, bottom = 0, right = 0;
-      bool fill_below_max = false;
-
-      for (std::list<int>::const_iterator i = c->begin(); i != c->end(); i++)
-        if (!segments[*i].empty())
-          {
-            int stop = INT_MAX, sleft = INT_MAX, sbottom = 0, sright = 0;
-            for (std::list<point_t>::const_iterator p = segments[*i].begin(); p != segments[*i].end(); p++)
-              {
-                if (p->x < sleft)
-                  sleft = p->x;
-                if (p->x > sright)
-                  sright = p->x;
-                if (p->y < stop)
-                  stop = p->y;
-                if (p->y > sbottom)
-                  sbottom = p->y;
-              }
-
-            area = segments[*i].size();
-            square_area = (sbottom - stop+1) * (sright - sleft+1);
-
-            if (square_area != 0)
-              ratio = 1. * area / square_area;
-
-            if (ratio < MAX_RATIO && ratio > 0)
-              fill_below_max = true;
-
-            if (sleft < left)
-              left = sleft;
-            if (sright > right)
-              right = sright;
-            if (stop < top)
-              top = stop;
-            if (sbottom > bottom)
-              bottom = sbottom;
-          }
-
-      if (c->size() > TEXT_LINE_SIZE)
-        {
-          if (right != left)
-            aspect = 1. * (bottom - top) / (right - left);
-          if (aspect < MIN_ASPECT || aspect > MAX_ASPECT || !fill_below_max)
-            for (std::list<int>::const_iterator i = c->begin(); i != c->end(); i++)
-              avail[*i] = -1;
-        }
-    }
-}
-
-int locate_first_min(const std::vector<int> &stats)
-{
-  int peak = 1;
-
-  for (unsigned int j = 3; j < stats.size(); j++)
-    if (stats[j] > stats[j - 1] && stats[j] > stats[j + 1])
-      {
-        peak = j;
-        break;
-      }
-  int dist = peak;
-  for (unsigned int j = peak; j < stats.size(); j++)
-    if (stats[j] < stats[j - 1] && stats[j] < stats[j + 1])
-      {
-        dist = j;
-        break;
-      }
-  return (dist);
-}
-
-int locate_max_entropy(const std::vector<std::vector<int> > &features, unsigned int max_area_ratio,
-                       unsigned int max_dist, std::vector<int> &stats)
-{
-  std::vector<double> entropy(max_area_ratio, 0);
-
-  for (unsigned int i = 1; i < max_area_ratio; i++)
-    {
-      int count = 0;
-      for (unsigned int j = 2; j < max_dist; j++)
-        if (features[i][j] == 0)
-          count++;
-        else
-          stats[j]++;
-
-      if (count > 0)
-        {
-          double probability = 1. * count / (max_dist - 2);
-          entropy[i] -= probability * log(probability);
-        }
-    }
-  int start_b = 1;
-  for (unsigned int i = 2; i < max_area_ratio; i++)
-    {
-      if (entropy[i] > entropy[start_b])
-        start_b = i;
-    }
-  return (start_b);
-}
-
 
 bool bulge(const point_t tail, const point_t head, const std::list<point_t> & seg)
 {
@@ -1008,10 +729,132 @@ void find_agent_strings(std::vector<std::vector<point_t> > &margins,
     }
 }
 
+std::vector<unsigned char> dilation(const std::vector<unsigned char> &image, int w, int h, unsigned int n)
+{ 
+  std::vector<unsigned char> out(w*h, 0);
+  int before = (n - 1) / 2;
+  int after = n - 1 - before;
+  for(int i = 0; i < h; ++i)
+    {
+      int cache = 0;
+      int j = 0;
+      for (int ii = i - before; ii <= i + after; ++ii)
+	for (int jj = j - before; jj <= j + after; ++jj)
+	  if (ii >= 0 && ii < h && jj >= 0 && jj < w)
+	    cache += image[ii*w + jj]; 
+      if (cache > 0)
+	out[i*w + j] = 1;
+      ++j;
+      for (; j < w; ++j)
+	{
+	  for (int ii = i - before; ii <= i + after; ++ii)
+	    {
+	      int jj = j - before; 
+	      if (ii >= 0 && ii < h && jj >= 0 && jj < w)
+		{
+		  cache -= image[ii*w + jj]; 
+		}	      
+	      jj = j + after;
+	      if (ii >= 0 && ii < h && jj >= 0 && jj < w)
+		{
+		  cache += image[ii*w + jj]; 
+		}
+	    }
+           if (cache > 0)
+	     out[i*w + j] = 1;
+	}
+    }
+  return out;
+}
+
+std::vector<std::vector<unsigned char>> get_connected_components(const std::vector<unsigned char> &image, int w, int h)
+{
+  std::vector<bool> visited(w*h, false);
+  std::vector<std::vector<unsigned char>> segments;
+  for(int i = 0; i < h; ++i)
+    for (int j = 0; j < w; ++j)
+      {
+	unsigned int pos = j + i * w;
+	unsigned char c = image[pos];
+	std::queue<unsigned int> bag;
+	if (c == 1 && !visited[pos])
+	  {
+	    bag.push(pos);
+	    visited[pos] = true;
+	    std::vector<unsigned char> segment(w*h, 0);
+	    while (!bag.empty())
+	      {
+		unsigned int current = bag.front();
+		bag.pop();
+		segment[current] = 1;
+		int row = current / w;
+		int col = current % w;
+		for (int ii = row - 1; ii <= row + 1; ++ii)
+		  for (int jj = col - 1; jj <= col + 1; ++jj)
+		    if (ii >= 0 && ii < h && jj >= 0 && jj < w)
+		      {
+			pos = jj + ii * w;
+			c = image[pos];
+			if (c == 1 && !visited[pos])
+			  {
+			    bag.push(pos);
+			    visited[pos] = true;
+			  }
+		      }
+	      }
+	    segments.push_back(segment);
+	  }
+      }
+  return segments;
+}
+
+void save_connected_components(const std::vector<std::vector<unsigned char>> &images, const std::vector<std::list<point_t> > &segments,
+			       int w, int h,
+			       std::list<std::list<std::list<point_t> > > &explicit_clusters)
+{
+  explicit_clusters.clear();
+  for (const auto &image : images)
+    {
+      std::list<std::list<point_t> > set_of_segments;
+      int x1 = w;
+      int y1 = h;
+      int x2 = 0;
+      int y2 = 0;
+      int num_points = 0;
+      for (const auto &segment : segments)
+	{
+	  point_t point = segment.front();
+	  int pos = point.x + point.y * w;
+	  if (image[pos] == 0)
+	    continue;
+	  for (auto pos : segment)
+	    {
+	      x1 = std::min(x1, pos.x);
+	      y1 = std::min(y1, pos.y);
+	      x2 = std::max(x2, pos.x);
+	      y2 = std::max(y2, pos.y);
+	    }
+	  num_points += segment.size();
+	  set_of_segments.push_back(segment);      
+	}      
+      if (set_of_segments.empty())
+	continue;
+      int new_w = x2 - x1 + 1;
+      int new_h = y2 - y1 + 1;
+      if (new_w < MAX_FONT_WIDTH || new_h < MAX_FONT_HEIGHT)
+	continue;
+      double aspect = static_cast<double>(std::max(new_w, new_h)) / std::min(new_w, new_h);
+      double fill = static_cast<double>(num_points) / (new_w * new_h);
+      if (aspect > MAX_ASPECT || fill > MAX_RATIO)
+	continue;
+      explicit_clusters.push_back(set_of_segments);
+    }
+}
+
 void find_segments(
     const Image &image, double threshold, const ColorGray &bgColor, bool adaptive, bool is_reaction,
     std::vector<arrow_t> &arrows, std::vector<plus_t> &pluses, bool keep, bool verbose,
-    std::list<std::list<std::list<point_t> > > &explicit_clusters)
+    std::list<std::list<std::list<point_t> > > &explicit_clusters, unsigned int segment_mask_size)
 {
   explicit_clusters.clear();
   std::vector<std::list<point_t> > segments;
@@ -1036,80 +879,44 @@ void find_segments(
       find_agent_strings(margins,segments,arrows,image,threshold,bgColor,verbose);
     }
   
-  remove_separators(segments, margins, SEPARATOR_ASPECT, SEPARATOR_AREA);
-
+  remove_separators(segments, margins, SEPARATOR_ASPECT, SEPARATOR_AREA);      
   remove_tables(segments, margins, SEPARATOR_AREA);
   // 2m22s
-
-  std::list<std::list<int> > clusters;
+  
   if (keep)
     {
       std::list<int> new_cluster;
       for (unsigned int s = 0; s < margins.size(); s++)
-      {
+	{
         new_cluster.push_back(s);       
       }
-      clusters.push_back(new_cluster);      
+      std::list<std::list<int> > clusters;
+      clusters.push_back(new_cluster);
+      build_explicit_clusters(clusters, segments, explicit_clusters);
     }
   else
     {
-      unsigned int max_dist = MAX_DIST;
-      unsigned int max_area_ratio = MAX_AREA_RATIO;
-      std::vector<std::vector<int> > distance_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
-      std::vector<std::vector<int> > area_matrix(segments.size(), std::vector<int> (segments.size(), INT_MAX));
-      std::vector<std::vector<int> > features(max_area_ratio, std::vector<int> (max_dist, 0));
+      int w = image.columns();
+      int h = image.rows();
+      std::vector<unsigned char> in(h*w, 0);
+      for (const auto &s : segments)
+	for (const auto &p : s)
+	  in[p.y * w + p.x] = 1;
+      
+      std::vector<unsigned char> out = dilation(in, w, h, segment_mask_size);
 
-      build_distance_matrix(margins, max_dist, distance_matrix, features, segments, max_area_ratio, area_matrix);
-
-      // 2m53s
-
-      std::vector<int> avail(margins.size(), 1);
-
-      /*
-	unsigned int ar;
-
-	for (unsigned int i = 0; i < margins.size(); i++)
-  	for (unsigned int j = i + 1; j < margins.size(); j++) {
-	ar = area_ratio(segments[i].size(), segments[j].size());
-	if (ar < max_area_ratio && distance_matrix[i][j] < max_dist)
-	features[ar][distance_matrix[i][j]]++;
-  	}
+      /*std::vector<unsigned char> out1(out);
+      for (auto &c : out1)
+	c = 255 - 255*c;
+      std::ofstream outfile("tmp.pgm", std::ios::binary );
+      outfile << "P5" << std::endl;
+      outfile << image.columns() << " " << image.rows() << std::endl;
+      outfile << 255 << std::endl;
+      std::copy(out1.begin(), out1.end(), std::ostreambuf_iterator<char>(outfile));
       */
-
-      // 5m53s -> new 4m15s
-
-      std::vector<int> stats(max_dist, 0);
-      int entropy_max = locate_max_entropy(features, max_area_ratio, max_dist, stats);
-
-      int dist = SINGLE_IMAGE_DIST;
-
-      if (entropy_max > THRESHOLD_LEVEL && !adaptive && margins.size() > 100)
-	{
-	  std::vector<int> text_stats(max_dist, 0);
-	  for (unsigned int j = 2; j < max_dist; j++)
-	    {
-	      text_stats[j] = features[1][j];
-	      //cout << j << " " << text_stats[j] << endl;
-	    }
-
-	  int dist_text = locate_first_min(text_stats);
-
-	  std::list<std::list<int> > text_blocks;
-	  assemble_clusters(margins, dist_text, distance_matrix, avail, true, area_matrix, text_blocks);
-	  remove_text_blocks(text_blocks, segments, avail);
-
-	  dist = 2 * dist_text;
-	}
-      //  if (dist<20) dist = 20;
-      for (unsigned int i = 0; i < margins.size(); i++)
-	if (avail[i] != -1)
-	  avail[i] = 1;
-
-
-      assemble_clusters(margins, dist, distance_matrix, avail, false, area_matrix, clusters);
+      std::vector<std::vector<unsigned char>> split_images = get_connected_components(out, image.columns(),  image.rows());
+      save_connected_components(split_images, segments, w, h, explicit_clusters);
     }
-  
-  build_explicit_clusters(clusters, segments, explicit_clusters);
 }
 
 void find_box_size(const std::set<std::pair<int,int> > &set1, int &x1, int &x2, int &y1, int &y2)

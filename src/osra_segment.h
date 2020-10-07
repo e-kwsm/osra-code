@@ -113,7 +113,7 @@ typedef struct plus_s plus_t;
 // Returns:
 // A list of clusters, each of which is a list of  connected segments each of which is a list of points
 void find_segments(const Image &image, double threshold, const ColorGray &bgColor, bool adaptive, bool is_reaction, std::vector<arrow_t> &arrows, std::vector<plus_t> &pluses,
-		   bool keep, bool verbose, std::list<std::list<std::list<point_t> > > &explicit_clusters);
+		   bool keep, bool verbose, std::list<std::list<std::list<point_t> > > &explicit_clusters, unsigned int segment_mask_size);
 
 // Function: prune_clusters()
 //

@@ -822,7 +822,7 @@ int osra_process_image(
       std::vector<std::vector<double> > array_of_avg_bonds(num_resolutions), array_of_ind_conf(num_resolutions);
       std::vector<std::vector<Image> > array_of_images(num_resolutions);
       std::vector<std::vector<box_t> > array_of_boxes(num_resolutions);
-
+      
       if (input_resolution > 300)
         {
           int percent = (100 * 300) / input_resolution;
@@ -854,22 +854,8 @@ int osra_process_image(
           unpaper_dx +=dx;
           unpaper_dy +=dy;
         }
-
-      // 0.1 is used for THRESHOLD_BOND here to allow for farther processing.
-      std::list<std::list<std::list<point_t> > > clusters;
-      find_segments(image, 0.1, bgColor, adaptive, is_reaction, arrows[l], pluses[l], keep_option, verbose, clusters);
-
-      if (verbose)
-        std::cout << "Number of clusters: " << clusters.size() << '.' << std::endl;
-
-      std::vector<box_t> boxes;
-      std::set<std::pair<int, int> > brackets;
-      int n_boxes = prune_clusters(clusters, boxes, brackets);
-      std::sort(boxes.begin(), boxes.end(), comp_boxes);
-
-      if (verbose)
-        std::cout << "Number of boxes: " << boxes.size() << '.' << std::endl;
-
+   
+      unsigned int segment_mask_size = SEGMENT_MASK_SIZE;
 
       for (int res_iter = 0; res_iter < num_resolutions; res_iter++)
         {
@@ -877,6 +863,27 @@ int osra_process_image(
           double total_confidence = 0;
 
           int resolution = select_resolution[res_iter];
+
+	  if (verbose)
+	    std::cout << "Resolution: " << resolution << '.' << std::endl;
+
+	  if (resolution >= 150)
+	    segment_mask_size = static_cast<unsigned int> (segment_mask_size * static_cast<double>(resolution) / 150);
+	  // 0.1 is used for THRESHOLD_BOND here to allow for farther processing.
+	  std::list<std::list<std::list<point_t> > > clusters;
+	  find_segments(image, 0.1, bgColor, adaptive, is_reaction, arrows[l], pluses[l], keep_option, verbose, clusters, segment_mask_size);
+
+	  if (verbose)
+	    std::cout << "Number of clusters: " << clusters.size() << '.' << std::endl;
+
+	  std::vector<box_t> boxes;
+	  std::set<std::pair<int, int> > brackets;
+	  int n_boxes = prune_clusters(clusters, boxes, brackets);
+	  std::sort(boxes.begin(), boxes.end(), comp_boxes);
+
+	  if (verbose)
+	    std::cout << "Number of boxes: " << boxes.size() << '.' << std::endl;
+      
           int working_resolution = resolution;
           if (resolution > 300)
             working_resolution = 300;
