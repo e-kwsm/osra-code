@@ -893,6 +893,32 @@ void find_segments(
       std::list<std::list<int> > clusters;
       clusters.push_back(new_cluster);
       build_explicit_clusters(clusters, segments, explicit_clusters);
+      int top = 0, left = INT_MAX, bottom = INT_MAX, right = 0;
+      int num_points = 0;
+      for (const auto &c : explicit_clusters)
+	for (const auto &s : c)
+	  for (const auto &p : s)
+	    {
+	      left = std::min(left, p.x);
+	      right = std::max(right, p.x);
+	      top = std::max(top, p.y);
+	      bottom = std::min(bottom, p.y);
+	      ++num_points;
+	    }
+      int new_w = right - left + 1;
+      int new_h = top - bottom + 1;
+      if (new_w < MAX_FONT_WIDTH || new_h < MAX_FONT_HEIGHT)
+	{
+	  explicit_clusters.clear();
+	  return;
+	}
+      double aspect = static_cast<double>(std::max(new_w, new_h)) / std::min(new_w, new_h);
+      double fill = static_cast<double>(num_points) / (new_w * new_h);
+      if (aspect > MAX_ASPECT || fill > MAX_RATIO)
+	{
+	  explicit_clusters.clear();
+	  return;
+	} 
     }
   else
     {
@@ -1080,68 +1106,32 @@ int prune_clusters(std::list<std::list<std::list<point_t> > > &clusters, std::ve
 
   while (c != clusters.end())
     {
-      unsigned int area = 0, square_area = 0;
-      double ratio = 0, aspect = 0;
       int top = INT_MAX, left = INT_MAX, bottom = 0, right = 0;
-      bool fill_below_max = false;
       for (std::list<std::list<point_t> >::const_iterator s = c->begin(); s != c->end(); s++)
         {
-          int stop = INT_MAX, sleft = INT_MAX, sbottom = 0, sright = 0;
           for (std::list<point_t>::const_iterator p = s->begin(); p != s->end(); p++)
             {
-              if (p->x < sleft)
-                sleft = p->x;
-              if (p->x > sright)
-                sright = p->x;
-              if (p->y < stop)
-                stop = p->y;
-              if (p->y > sbottom)
-                sbottom = p->y;
+	      left = std::min(left, p->x);
+	      right = std::max(right, p->x);
+	      top = std::min(top, p->y);
+	      bottom = std::max(bottom, p->y);
             }
-
-          area = s->size();
-          square_area = (sbottom - stop+1) * (sright - sleft+1);
-          ratio = 0;
-          if (square_area != 0)
-            ratio = 1. * area / square_area;
-
-          if (ratio < MAX_RATIO && ratio > 0)
-            fill_below_max = true;
-
-          if (sleft < left)
-            left = sleft;
-          if (sright > right)
-            right = sright;
-          if (stop < top)
-            top = stop;
-          if (sbottom > bottom)
-            bottom = sbottom;
         }
 
-      if (right != left)
-        aspect = 1. * (bottom - top) / (right - left);
-
-      if (fill_below_max && aspect > MIN_ASPECT && aspect < MAX_ASPECT)
-        {
-          box_t b1;
-          boxes.push_back(b1);
-          boxes[n_boxes].x1 = left;
-          boxes[n_boxes].y1 = top;
-          boxes[n_boxes].x2 = right;
-          boxes[n_boxes].y2 = bottom;
-
-          remove_brackets(left, right, top, bottom, c, brackets);
-
-          for (std::list<std::list<point_t> >::const_iterator s = c->begin(); s != c->end(); s++)
-              for (std::list<point_t>::const_iterator p = s->begin(); p != s->end(); p++)
-              boxes[n_boxes].c.push_back(*p);
-          c++;
-          n_boxes++;
-        }
-      else
-        {
-          c = clusters.erase(c);
-        }
+      box_t b1;
+      boxes.push_back(b1);
+      boxes[n_boxes].x1 = left;
+      boxes[n_boxes].y1 = top;
+      boxes[n_boxes].x2 = right;
+      boxes[n_boxes].y2 = bottom;
+      
+      remove_brackets(left, right, top, bottom, c, brackets);
+      
+      for (std::list<std::list<point_t> >::const_iterator s = c->begin(); s != c->end(); s++)
+	for (std::list<point_t>::const_iterator p = s->begin(); p != s->end(); p++)
+	  boxes[n_boxes].c.push_back(*p);
+      c++;
+      n_boxes++;
     }
   return (n_boxes);
 }

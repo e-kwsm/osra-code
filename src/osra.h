@@ -114,7 +114,6 @@ typedef struct bond_s bond_t;
 // THRESHOLD_GLOBAL - gray-level threshold for image binarization
 // THRESHOLD_LOW_RES - gray-level threshold for low resolutions (72 dpi)
 // MAX_RATIO - maximum black/white fill ratio for perspective molecular structures
-// MIN_ASPECT - minimum aspect ration
 // MAX_ASPECT - maximum aspect ratio
 // MIN_A_COUNT - minimum number of atoms
 // MAX_A_COUNT - maximum number of atoms
@@ -153,7 +152,6 @@ typedef struct bond_s bond_t;
 #define THRESHOLD_GLOBAL 0.4
 #define THRESHOLD_LOW_RES 0.2
 #define MAX_RATIO 0.2
-#define MIN_ASPECT 0.1
 #define MAX_ASPECT 10.
 #define MIN_A_COUNT 5
 #define MAX_A_COUNT 250
