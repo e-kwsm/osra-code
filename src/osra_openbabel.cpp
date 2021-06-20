@@ -29,6 +29,7 @@
 #include <openbabel/obiter.h>
 #include <openbabel/elements.h>
 #include <openbabel/obfunctions.h>
+#include <openbabel/kekulize.h>
 
 #include <sstream> // std:ostringstream
 #include <iostream> // std::cerr
@@ -287,7 +288,7 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
   // The indexes of "superatoms" and the bonds, that connect these superatoms to the molecule:
   std::vector<int> super_atoms, super_bonds;
   int anum;
-
+  bool needs_kekulization = false;
   mol.SetDimension(2);
   mol.BeginModify();
   for (int i = 0; i < n_bond; i++)
@@ -334,7 +335,9 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
               std::cout << "Creating aromatic bond #" << mol.NumBonds() << " " << atom[bond[i].a].n << "->"
                         << atom[bond[i].b].n << ", order: " << AROMATIC_BOND_ORDER << '.' << std::endl;
 
-            mol.AddBond(atom[bond[i].a].n, atom[bond[i].b].n, AROMATIC_BOND_ORDER);
+            //mol.AddBond(atom[bond[i].a].n, atom[bond[i].b].n, AROMATIC_BOND_ORDER);
+	    mol.AddBond(atom[bond[i].a].n, atom[bond[i].b].n, 1, OBBond::Aromatic);
+	    needs_kekulization = true;
           }
         else
           {
@@ -363,6 +366,20 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 	      mol.AddBond(atom[bond[i].a].n, atom[bond[i].b].n, bond[i].type, bond_flags);
           }
       }
+  if (needs_kekulization)
+    {
+      mol.SetAromaticPerceived();
+      // First of all, set the atoms at the ends of the aromatic bonds to also
+      // be aromatic. This information is required for OBKekulize.
+      FOR_BONDS_OF_MOL(bond, mol) {
+	if (bond->IsAromatic()) {
+	  bond->GetBeginAtom()->SetAromatic();
+	  bond->GetEndAtom()->SetAromatic();
+	}
+      }
+      bool ok = OpenBabel::OBKekulize(&mol);       
+      mol.SetAromaticPerceived(false);
+    }
   mol.EndModify();
 
   mol.FindRingAtomsAndBonds();
