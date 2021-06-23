@@ -793,7 +793,10 @@ dnl C-code needs everything completely resolved:
 AC_DEFINE_UNQUOTED(DATA_DIR, ["$resolved_datadir"])
 AC_SUBST([resolved_datadir], [$resolved_datadir])
 
+AC_SUBST([PACKAGE_VERSION_WITH_DASHES], [`echo ${PACKAGE_VERSION} | perl -ne '/(\d+)\.(\d+)\.(\d+)/ || die; printf "%d-%d-%d", $1, $2, $3;'`])
+
 AC_CONFIG_HEADER([src/config.h])
-AC_CONFIG_FILES([Makefile Makefile.inc doc/manual.sgml package/linux/osra.pc package/linux/debian/control package/linux/debian/rules package/linux/suse/osra.spec pom.xml])
+AC_CONFIG_FILES([Makefile Makefile.inc doc/manual.sgml package/linux/osra.pc package/linux/debian/control package/linux/debian/rules package/linux/suse/osra.spec pom.xml
+package/linux/osra.sh package/linux/install.sh package/linux/install-user.sh package/osx/osra.sh package/osx/install.sh package/win32/osra.nsi])
 AC_OUTPUT
 AC_MSG_NOTICE([Now you can run "make all install" to compile and install the application.])

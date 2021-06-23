@@ -620,6 +620,7 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PACKAGE_VERSION_WITH_DASHES
 resolved_datadir
 SHAREDEXT
 LDSHAREDFLAGS
@@ -9741,9 +9742,12 @@ _ACEOF
 resolved_datadir=$resolved_datadir
 
 
+PACKAGE_VERSION_WITH_DASHES=`echo ${PACKAGE_VERSION} | perl -ne '/(\d+)\.(\d+)\.(\d+)/ || die; printf "%d-%d-%d", $1, $2, $3;'`
+
+
 ac_config_headers="$ac_config_headers src/config.h"
 
-ac_config_files="$ac_config_files Makefile Makefile.inc doc/manual.sgml package/linux/osra.pc package/linux/debian/control package/linux/debian/rules package/linux/suse/osra.spec pom.xml"
+ac_config_files="$ac_config_files Makefile Makefile.inc doc/manual.sgml package/linux/osra.pc package/linux/debian/control package/linux/debian/rules package/linux/suse/osra.spec pom.xml package/linux/osra.sh package/linux/install.sh package/linux/install-user.sh package/osx/osra.sh package/osx/install.sh package/win32/osra.nsi"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -10444,6 +10448,12 @@ do
     "package/linux/debian/rules") CONFIG_FILES="$CONFIG_FILES package/linux/debian/rules" ;;
     "package/linux/suse/osra.spec") CONFIG_FILES="$CONFIG_FILES package/linux/suse/osra.spec" ;;
     "pom.xml") CONFIG_FILES="$CONFIG_FILES pom.xml" ;;
+    "package/linux/osra.sh") CONFIG_FILES="$CONFIG_FILES package/linux/osra.sh" ;;
+    "package/linux/install.sh") CONFIG_FILES="$CONFIG_FILES package/linux/install.sh" ;;
+    "package/linux/install-user.sh") CONFIG_FILES="$CONFIG_FILES package/linux/install-user.sh" ;;
+    "package/osx/osra.sh") CONFIG_FILES="$CONFIG_FILES package/osx/osra.sh" ;;
+    "package/osx/install.sh") CONFIG_FILES="$CONFIG_FILES package/osx/install.sh" ;;
+    "package/win32/osra.nsi") CONFIG_FILES="$CONFIG_FILES package/win32/osra.nsi" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
