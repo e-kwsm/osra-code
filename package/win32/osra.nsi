@@ -1,5 +1,5 @@
-!define DOT_VERSION  "2.1.1"
-!define DASH_VERSION "2-1-1"
+!define DOT_VERSION  "2.1.2"
+!define DASH_VERSION "2-1-2"
 
 !include Sections.nsh
 ; include for some of the windows messages defines
