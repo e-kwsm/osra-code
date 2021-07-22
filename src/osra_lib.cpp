@@ -253,43 +253,53 @@ potrace_state_t * const  raster_to_vector(Image &box,ColorGray bgColor, double T
 }
 
 void rotate_point(int &x, int &y, int midX, int midY, double rotation)
-{
-// create 2D rotation matrix
-  float sinval = sin(rotation); // no use of sincos()-function for compatibility, no performace bottleneck anymore anyway
-  float cosval = cos(rotation);
-  float m11 = cosval;
-  float m12 = sinval;
-  float m21 = -sinval;
-  float m22 = cosval;
+{ 
+  double dX = x - midX;
+  double dY = y - midY;
+    
+  dY = -dY;
+  double sinval = sin(-rotation); 
+  double cosval = cos(-rotation);
+  double diffX = dX * cosval + dY * sinval;
+  double diffY = dX * (-sinval) + dY * cosval;
+  diffY = -diffY;
 
-  int dX = x - midX;
-  int dY = y - midY;
-
-  int diffX = dX * m11 + dY * m21;
-  int diffY = dX * m12 + dY * m22;
-
-  x = midX+diffX;
-  y = midY+diffY;
+  if ((rotation >  1*PI/4 && rotation < 3*PI/4) ||
+      (rotation > 5*PI/4 && rotation < 7*PI/4))
+    std::swap(midX, midY);
+  x = midX + int(diffX);
+  y = midY + int(diffY);
 }
 
 void rotate_coordinate_box(box_t &coordinate_box,double rotation,int width,int height)
 {
+  if (rotation == 0)
+    return;
+  
   int midX = width/2;
   int midY = height/2;
   int x1 = coordinate_box.x1;
   int y1 = coordinate_box.y1;
-  int x2 = coordinate_box.x2;
-  int y2 = coordinate_box.y2;
+  int x4 = coordinate_box.x2;
+  int y4 = coordinate_box.y2;
+  int x2 = x1;
+  int y2 = y4;
+  int x3 = x4;
+  int y3 = y1;
 
   rotate_point(x1,y1,midX,midY,rotation);
-  rotate_point(x2,y1,midX,midY,rotation);
-  rotate_point(x1,y2,midX,midY,rotation);
   rotate_point(x2,y2,midX,midY,rotation);
+  rotate_point(x3,y3,midX,midY,rotation);
+  rotate_point(x4,y4,midX,midY,rotation);
 
-  coordinate_box.x1 = std::min(x1,x2);
-  coordinate_box.x2 = std::max(x1,x2);
-  coordinate_box.y1 = std::min(y1,y2);
-  coordinate_box.y2 = std::max(y1,y2);
+  if ((rotation >  1*PI/4 && rotation < 3*PI/4) ||
+      (rotation > 5*PI/4 && rotation < 7*PI/4))
+    std::swap(width, height);
+  
+  coordinate_box.x1 = std::max(0, std::min(std::min(std::min(x1,x2), x3), x4));
+  coordinate_box.x2 = std::min(width, std::max(std::max(std::max(x1,x2), x3), x4));
+  coordinate_box.y1 = std::max(0, std::min(std::min(std::min(y1,y2), y3), y4));
+  coordinate_box.y2 = std::min(height, std::max(std::max(std::max(y1,y2), y3), y4));
 }
 
 void split_fragments_and_assemble_structure_record(
@@ -393,7 +403,7 @@ void split_fragments_and_assemble_structure_record(
 		  coordinate_box.y1 = (int) (-(double)page_scale * unpaper_dy + (double) page_scale * boxes[k].y1 + (double) page_scale * box_scale * fragments[i].y1 - (double) page_scale * FRAME);
 		  coordinate_box.x2 = (int) (-(double)page_scale * unpaper_dx + (double) page_scale * boxes[k].x1 + (double) page_scale * box_scale * fragments[i].x2 - (double) page_scale * FRAME);
 		  coordinate_box.y2 = (int) (-(double)page_scale * unpaper_dy + (double) page_scale * boxes[k].y1 + (double) page_scale * box_scale * fragments[i].y2 - (double) page_scale * FRAME);
-		  //rotate_coordinate_box(coordinate_box,rotation,image.columns(),image.rows());
+		  rotate_coordinate_box(coordinate_box,rotation,image.columns(),image.rows());
 		  rel_box.x1 = (int)((double)boxes[k].x1 + (double) box_scale * fragments[i].x1 - FRAME);
 		  rel_box.y1 = (int)((double)boxes[k].y1 + (double) box_scale * fragments[i].y1 - FRAME);
 		  rel_box.x2 = (int)((double)boxes[k].x1 + (double) box_scale * fragments[i].x2 - FRAME);
@@ -405,7 +415,7 @@ void split_fragments_and_assemble_structure_record(
 		  coordinate_box.y1 = (int) (-(double)page_scale * unpaper_dy + (double) page_scale * boxes[k].y1);
 		  coordinate_box.x2 = (int) (-(double)page_scale * unpaper_dx + (double) page_scale * boxes[k].x2);
 		  coordinate_box.y2 = (int) (-(double)page_scale * unpaper_dy + (double) page_scale * boxes[k].y2);
-		  //rotate_coordinate_box(coordinate_box,rotation,image.columns(),image.rows());
+		  rotate_coordinate_box(coordinate_box,rotation,image.columns(),image.rows());
 		  rel_box.x1 = boxes[k].x1;
 		  rel_box.y1 = boxes[k].y1;
 		  rel_box.x2 = boxes[k].x2;
@@ -707,17 +717,6 @@ int osra_process_image(
     }
 #endif
 
-
-  if (show_coordinates && rotate != 0)
-    {
-      std::cerr << "Showing the box coordinates is currently not supported together with image rotation and is therefore disabled." << std::endl;
-#ifdef OSRA_LIB
-      return ERROR_ILLEGAL_ARGUMENT_COMBINATION;
-#else
-      show_coordinates = false;
-#endif
-    }
-
   if (!embedded_format.empty() && !(output_format == "sdf" && (embedded_format == "inchi" || embedded_format == "smi"
                                     || embedded_format == "can")))
     {
@@ -842,7 +841,7 @@ int osra_process_image(
           image.rotate(rotate);
         }
 
-      double rotation = 0;
+      double rotation = rotate * PI / 180;
       int unpaper_dx = 0;
       int unpaper_dy = 0;
       for (int i = 0; i < do_unpaper; i++)
@@ -937,6 +936,13 @@ int osra_process_image(
                 potrace_path_t const * const p = st->plist;
                 n_atom = find_atoms(p, atom, bond, &n_bond,width,height);
 
+		if (n_atom >= MAX_ATOMS)
+		  {
+		    if (st != NULL)
+		      potrace_state_free(st);
+		    continue;
+		  }
+		
                 int real_font_width, real_font_height;
                 n_letters = find_chars(p, orig_box, letters, atom, bond, n_atom, n_bond, height, width, bgColor,
                                        THRESHOLD_BOND, max_font_width, max_font_height, real_font_width, real_font_height,verbose, recognized_chars);
