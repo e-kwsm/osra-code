@@ -259,14 +259,7 @@ void mark_reversible(std::vector<arrow_t> &arrows)
 		  }
 	      }
 	  }
-      }
-
-  std::vector<arrow_t>::iterator i=arrows.begin();
-  while (i!=arrows.end())
-    {
-      if (i->remove) i=arrows.erase(i);
-      else i++;
-    }
+      } 
 }
 
 double distance_from_box(const point_t &p, const box_t &b)
@@ -577,21 +570,27 @@ void arrange_reactions(std::vector<arrow_t> &arrows, const std::vector<box_t> &p
   std_dev_arrow = sqrt(avg_dist_arrow_squared - avg_dist_arrow*avg_dist_arrow);
 
   mark_reversible(arrows_by_closest);
-
+  
   // Break arrows into close-knit groups
   std::vector<std::vector<arrow_t> > arrow_groups;
   int i=0;
   while (i<n_arrows)
     {
-      std::vector<arrow_t> group;
-      group.push_back(arrows_by_closest[i]);
-      i++;
-      while (i<n_arrows && dist_arrows[i]<avg_dist_arrow+2*std_dev_arrow)
+      if (!arrows_by_closest[i].remove)
 	{
+	  std::vector<arrow_t> group;
 	  group.push_back(arrows_by_closest[i]);
 	  i++;
+	  while (i<n_arrows && dist_arrows[i]<avg_dist_arrow+2*std_dev_arrow)
+	    {
+	      if (!arrows_by_closest[i].remove)
+		group.push_back(arrows_by_closest[i]);
+	      i++;
+	    }
+	  arrow_groups.push_back(group);
 	}
-      arrow_groups.push_back(group);
+      else
+	i++;
     }
 
   // arrange arrows in head to tail fashion
