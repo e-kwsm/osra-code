@@ -336,8 +336,8 @@ int find_wavy_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<ato
 		    {
 		      double da =  fabs(distance_from_bond_y(xa,ya,xb,yb,atom[bond[*i].a].x, atom[bond[*i].a].y));
 		      double db =  fabs(distance_from_bond_y(xa,ya,xb,yb,atom[bond[*i].b].x, atom[bond[*i].b].y));
-
-		      if (da > avg/4 || db > avg/4)
+		      double too_far_threshold = std::min(15.0, avg/4);
+		      if (da > too_far_threshold || db > too_far_threshold)
 			{
 			  too_far = true;
 			  break;

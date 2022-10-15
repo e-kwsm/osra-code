@@ -975,7 +975,7 @@ int osra_process_image(
                 remove_zero_bonds(bond, n_bond, atom);
 
 		n_bond = find_wavy_bonds(bond,n_bond,atom,avg_bond_length);
-
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 n_letters = find_fused_chars(bond, n_bond, atom, letters, n_letters, real_font_height,
                                              real_font_width, 0, orig_box, bgColor, THRESHOLD_BOND, 3, verbose, recognized_chars);
 
@@ -1076,7 +1076,7 @@ int osra_process_image(
                 if (verbose)
                   std::cout << "Final number of atoms: " << real_atoms << ", bonds: " << real_bonds << ", chars: " << n_letters << '.' << std::endl;
 
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
                 split_fragments_and_assemble_structure_record(atom,n_atom,bond,n_bond,boxes,
 							      l,k,resolution,res_iter,output_image_file_prefix,image,orig_box,real_font_width,real_font_height,
 							      thickness,avg_bond_length,superatom,real_atoms,real_bonds,bond_max_type,
