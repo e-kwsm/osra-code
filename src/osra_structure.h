@@ -53,6 +53,7 @@ struct bracket_t
 {
   box_t box;
   std::string a;
+  int charge;
 };
 
 //

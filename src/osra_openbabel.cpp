@@ -622,6 +622,7 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 	  OBSetData *group = new OBSetData;
 	  group->SetAttribute("_SGroupBrackets");
 	  group->SetOrigin(userInput);
+	  double max_overlap = 0.25;
 	  for (size_t i = 0; i < brackets.size(); i++)
 	    {
 	      double x1 = double(brackets[i].box.x1) * scale;
@@ -629,6 +630,11 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 	      double x2 = double(brackets[i].box.x2) * scale;
 	      double y2 = -double(brackets[i].box.y2) * scale;
 
+	      double x3 = FLT_MAX;
+	      double y3 = -FLT_MAX;
+	      double x4 = -FLT_MAX;
+	      double y4 = FLT_MAX;
+	      
               std::set<OBAtom*> visited;
               std::set<OBAtom*> nbrs;
 	      OBAtom* start(NULL);
@@ -671,9 +677,29 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 			  bond2 = b->GetIdx();
 			}
 		    }
+		  x3 = std::min(x3, std::min(a1->x(), a2->x()));
+		  y3 = std::max(y3, std::max(a1->y(), a2->y()));
+		  x4 = std::max(x4, std::max(a1->x(), a2->x()));
+		  y4 = std::min(y4, std::min(a1->y(), a2->y()));
 		}
 	      if (bond1 < 0 || bond2 < 0 || bond1 == bond2)
-		continue;
+		{
+		  double x5 = std::max(x1, x3);
+		  double y5 = std::min(y1, y3);
+		  double x6 = std::min(x2, x4);
+		  double y6 = std::max(y2, y4);
+		  if (x5 < x6 && y6 < y5 && x3 < x4 && y4 < y3)
+		    {
+		      double overlap = (x6 - x5) * (y5 - y6) / ((x4 - x3) * (y3 - y4));
+		      int charge = brackets[i].charge;
+		      if (overlap > max_overlap && charge != 0)
+			{
+			  mol.SetTotalCharge(charge);
+			  max_overlap = overlap;
+			}
+		    }
+		  continue;
+		}
 	      OBBond *b1 = mol.GetBond(bond1);
 	      OBBond *b2 = mol.GetBond(bond2);
 

@@ -414,7 +414,17 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
             }
         }
       label[i].a += charges;
-      }
+      if (label[i].x1 == FLT_MAX || label[i].y1 == FLT_MAX)
+	{
+	  label[i].x1 = letters[label[i].n.front()].x;
+	  label[i].y1 = letters[label[i].n.front()].y;
+	}
+      if (label[i].x2 == FLT_MAX || label[i].y2 == FLT_MAX)
+	{
+	  label[i].x2 = letters[label[i].n.back()].x;
+	  label[i].y2 = letters[label[i].n.back()].y;
+	}
+    }
 
   return (label.size());
 }

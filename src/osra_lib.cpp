@@ -957,7 +957,7 @@ int osra_process_image(
                 n_letters = find_plus_minus(p, orig_box, bgColor, THRESHOLD_BOND, letters, atom, bond, n_atom, n_bond, height, width,
                                             real_font_height, real_font_width, n_letters, avg_bond_length);
                 n_atom = find_small_bonds(p, atom, bond, n_atom, &n_bond, max_area, avg_bond_length / 2, 5);
-
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 		//remove_small_bonds_in_chars(atom,bond,letters);
 
                 find_old_aromatic_bonds(p, bond, n_bond, atom, n_atom, avg_bond_length);
@@ -975,7 +975,7 @@ int osra_process_image(
                 remove_zero_bonds(bond, n_bond, atom);
 
 		n_bond = find_wavy_bonds(bond,n_bond,atom,avg_bond_length);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
                 n_letters = find_fused_chars(bond, n_bond, atom, letters, n_letters, real_font_height,
                                              real_font_width, 0, orig_box, bgColor, THRESHOLD_BOND, 3, verbose, recognized_chars);
 

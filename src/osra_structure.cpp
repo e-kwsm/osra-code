@@ -2945,33 +2945,44 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
   for (int j = 0; j < bracket_boxes.size(); j++)
     {
       box_t b = bracket_boxes[j].box;
-      std::string a;
+      std::string a, charge;
       double d = DBL_MAX;
       for (int i = 0; i < n_label; i++)
-	if ((label[i].a)[0] != '+' && (label[i].a)[0] != '-')
-	  {
-	    double x =   (double) label[i].x1;
-	    double y =   (double) label[i].y1;
+	{
+	  double x =   (double) label[i].x1;
+	  double y =   (double) label[i].y1;
 
-	    if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height)
-	      {
-		double dist = (x - b.x2) * (x - b.x2) + (y - b.y2) * (y - b.y2);
-		if (dist < d)
-		  {
-		    d = dist;
-		    a = label[i].a;
-		  }
-	      }
+	  if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height &&
+	      (label[i].a)[0] != '+' && (label[i].a)[0] != '-')
+	    {
+	      double dist = (x - b.x2) * (x - b.x2) + (y - b.y2) * (y - b.y2);
+	      if (dist < d)
+		{
+		  d = dist;
+		  a = label[i].a;
+		}
+	    }
+	  else if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y1) < 2 * real_font_height &&
+		   (label[i].a.find('+') != std::string::npos || label[i].a.find('-') != std::string::npos))
+	    {
+	      double dist = (x - b.x2) * (x - b.x2) + (y - b.y1) * (y - b.y1);
+	      if (dist < d)
+		{
+		  d = dist;
+		  charge = label[i].a;
+		}
+	    }
 	  }
     
    
       for (int i = 0; i < n_letters; i++)
-	if (letters[i].free && letters[i].a != '+' && letters[i].a != '-')
+	if (letters[i].free)
 	  {
 	    double x =   (double) letters[i].x;
 	    double y =   (double) letters[i].y;
 	    
-	    if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height)
+	    if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height &&
+		letters[i].a != '+' && letters[i].a != '-')
 	      {
 		double dist = (x - b.x2) * (x - b.x2) + (y - b.y2) * (y - b.y2);
 		if (dist < d)
@@ -2980,8 +2991,41 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
 		    a = letters[i].a;
 		  }
 	      }
+	    else if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y1) < 2 * real_font_height &&
+		     (letters[i].a == '+' || letters[i].a == '-'))
+	      {
+		double dist = (x - b.x2) * (x - b.x2) + (y - b.y1) * (y - b.y1);
+		if (dist < d)
+		  {
+		    d = dist;
+		    charge = letters[i].a;
+		  }
+	      }
 	  }
       bracket_boxes[j].a = a;
+      int multiplier = 1;
+      int total = 0;
+      if (charge.length() == 2 && isdigit(charge[0]))
+	{
+	  multiplier = charge[0] - '0';
+	  if (charge[1] == '+')
+	    total = 1*multiplier;
+	  if (charge[1] == '-')
+	    total = -1*multiplier;
+	}
+      else
+	{
+	  for(auto c : charge)
+	    {
+	      if (c == '+')
+		++total;
+	      if (c == '-')
+		--total;
+	    }
+	  if (total != charge.length() || total != -1*charge.length())
+	    total = 0;
+	}
+      bracket_boxes[j].charge = total;
     }
 
 }
