@@ -156,9 +156,9 @@ int double_triple_bonds(std::vector<atom_t> &atom, std::vector<bond_t> &bond, in
 // avg - average bond length
 // maxh - maximum bond thickness
 // max_dist_double_bond - maximum distance between double bonds
-void extend_terminal_bond_to_label(std::vector<atom_t> &atom, const std::vector<letters_t> &letters,
+void extend_terminal_bond_to_label(std::vector<atom_t> &atom, std::vector<letters_t> &letters,
                                    int n_letters, const std::vector<bond_t> &bond, int n_bond,
-                                   const std::vector<label_t> &label, int n_label, double avg, double maxh,
+                                   std::vector<label_t> &label, int n_label, double avg, double maxh,
                                    double max_dist_double_bond);
 
 // Function: extend_terminal_bond_to_bonds()
@@ -423,8 +423,8 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom, const std::vect
                           int box_y, double box_scale, int real_font_width,int real_font_height,
 			  std::vector<bracket_t> &reduced_bracket_boxes);
 
-void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes, const std::vector<label_t> &label,
-                               int n_label, const std::vector<letters_t> &letters, int n_letters,
+void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes, std::vector<label_t> &label,
+                               int n_label, std::vector<letters_t> &letters, int n_letters,
 			       int real_font_width, int real_font_height);
 
 void remove_vertical_bonds_close_to_brackets(const std::vector<bracket_t> &bracket_boxes,
@@ -433,3 +433,5 @@ void remove_vertical_bonds_close_to_brackets(const std::vector<bracket_t> &brack
 
 
 void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, double avg);
+
+std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label, int n_label);

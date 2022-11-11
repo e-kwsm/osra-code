@@ -781,10 +781,11 @@ int double_triple_bonds(std::vector<atom_t> &atom, std::vector<bond_t> &bond, in
 }
 
 void extend_terminal_bond_to_label(
-    std::vector<atom_t> &atom, const std::vector<letters_t> &letters, int n_letters,
-    const std::vector<bond_t> &bond, int n_bond, const std::vector<label_t> &label,
+    std::vector<atom_t> &atom,  std::vector<letters_t> &letters, int n_letters,
+    const std::vector<bond_t> &bond, int n_bond,  std::vector<label_t> &label,
     int n_label, double avg, double maxh, double max_dist_double_bond)
 {
+  std::vector<int> taken_letters;
   for (int j = 0; j < n_bond; j++)
     if (bond[j].exists)
       {
@@ -859,6 +860,7 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].a].min_y = letters[l2].min_y;
 		atom[bond[j].a].max_x = letters[l2].max_x;
 		atom[bond[j].a].max_y = letters[l2].max_y;
+		taken_letters.push_back(l2);
               }
             else if (found1)
               {
@@ -870,6 +872,7 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].a].min_y = label[l1].min_y;
 		atom[bond[j].a].max_x = label[l1].max_x;
 		atom[bond[j].a].max_y = label[l1].max_y;
+		label[l1].free = false;
               }
           }
         if (not_corner_b)
@@ -932,6 +935,7 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].b].min_y = letters[l2].min_y;
 		atom[bond[j].b].max_x = letters[l2].max_x;
 		atom[bond[j].b].max_y = letters[l2].max_y;
+		taken_letters.push_back(l2);
               }
             else if (found1)
               {
@@ -943,9 +947,14 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].b].min_y = label[l1].min_y;
 		atom[bond[j].b].max_x = label[l1].max_x;
 		atom[bond[j].b].max_y = label[l1].max_y;
+		label[l1].free = false;
               }
           }
       }
+  for (auto i : taken_letters)
+    {
+      letters[i].free = false;
+    }
 }
 
 void extend_terminal_bond_to_bonds(std::vector<atom_t> &atom, std::vector<bond_t> &bond, int n_bond,
@@ -2938,8 +2947,8 @@ void remove_vertical_bonds_close_to_brackets(
 }
 
 void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
-                               const std::vector<label_t> &label, int n_label,
-                               const std::vector<letters_t> &letters, int n_letters,
+			       std::vector<label_t> &label, int n_label,
+			       std::vector<letters_t> &letters, int n_letters,
 			       int real_font_width, int real_font_height)
 {
   for (int j = 0; j < bracket_boxes.size(); j++)
@@ -2947,31 +2956,36 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
       box_t b = bracket_boxes[j].box;
       std::string a, charge;
       double d = DBL_MAX;
+      int found_label = -1;
+      int found_letter = -1;
       for (int i = 0; i < n_label; i++)
-	{
-	  double x =   (double) label[i].x1;
-	  double y =   (double) label[i].y1;
+	if (label[i].free)
+	  {
+	    double x =   (double) label[i].x1;
+	    double y =   (double) label[i].y1;
 
-	  if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height &&
-	      (label[i].a)[0] != '+' && (label[i].a)[0] != '-')
-	    {
-	      double dist = (x - b.x2) * (x - b.x2) + (y - b.y2) * (y - b.y2);
-	      if (dist < d)
-		{
-		  d = dist;
-		  a = label[i].a;
-		}
-	    }
-	  else if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y1) < 2 * real_font_height &&
-		   (label[i].a.find('+') != std::string::npos || label[i].a.find('-') != std::string::npos))
-	    {
-	      double dist = (x - b.x2) * (x - b.x2) + (y - b.y1) * (y - b.y1);
-	      if (dist < d)
-		{
-		  d = dist;
-		  charge = label[i].a;
-		}
-	    }
+	    if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y2) < 2 * real_font_height &&
+		(label[i].a)[0] != '+' && (label[i].a)[0] != '-')
+	      {
+		double dist = (x - b.x2) * (x - b.x2) + (y - b.y2) * (y - b.y2);
+		if (dist < d)
+		  {
+		    d = dist;
+		    a = label[i].a;
+		    found_label = i;
+		  }
+	      }
+	    else if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y1) < 2 * real_font_height &&
+		     (label[i].a.find('+') != std::string::npos || label[i].a.find('-') != std::string::npos))
+	      {
+		double dist = (x - b.x2) * (x - b.x2) + (y - b.y1) * (y - b.y1);
+		if (dist < d)
+		  {
+		    d = dist;
+		    charge = label[i].a;
+		    found_label = i;
+		  }
+	      }
 	  }
     
    
@@ -2989,6 +3003,7 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
 		  {
 		    d = dist;
 		    a = letters[i].a;
+		    found_letter = i;
 		  }
 	      }
 	    else if (fabs(x - b.x2) < 2 * real_font_width && fabs(y - b.y1) < 2 * real_font_height &&
@@ -2999,9 +3014,14 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes,
 		  {
 		    d = dist;
 		    charge = letters[i].a;
+		    found_letter = i;
 		  }
 	      }
 	  }
+      if (found_label >=0)
+	label[found_label].free = false;
+      if (found_letter >=0)
+	letters[found_letter].free = false;
       bracket_boxes[j].a = a;
       int multiplier = 1;
       int total = 0;
@@ -3058,6 +3078,43 @@ void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, 
       }
 }
       
-      
+std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label, int n_label)
+{
+  std::string ions;
+  for (int i = 0; i < n_label; i++)
+    if (label[i].free)
+      {
+	ions = label[i].a; // TODO parse and validate?
+	label[i].free = false;
+      }
+  std::string element;
+  unsigned int amount = 0;
+  int charge = 0;
+  size_t begin = 0;
+  size_t length = ions.length();
+
+  if (begin < length)
+    {
+      if (isdigit(ions[begin]))
+	{
+	  amount = ions[begin] - '0' + 10*amount;
+	  ++begin;
+	}
+      if  (ions[length-1] = '-')
+	{
+	  --charge;
+	  --length;	    
+	}
+      else if  (ions[length-1] = '+')
+	{
+	  ++charge;
+	  --length;	    
+	}
+      element = ions.substr(begin, length-begin);
+    }
+  if (amount == 0 && !element.empty())
+    amount = 1;
+  return std::make_tuple(amount, element, charge);
+}
 
 // US20050049267A1-20050303-C04374.png

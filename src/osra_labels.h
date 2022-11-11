@@ -75,6 +75,10 @@ struct label_s
   // array: n
   // vector of character indices comprising the atomic label
   std::vector<int> n;
+  
+  // bool: free
+  // whether or not it was already assign to an existing atomic label
+  bool free;
 };
 // typedef: label_t
 // defines label_t type based on label_s struct

@@ -132,6 +132,7 @@ const std::string get_formatted_structure(
     double avg_bond_length, double scaled_avg_bond_length, bool show_avg_bond_length,
     const int * const resolution, const int * const page, const box_t * const surrounding_box,
     const std::map<std::string, std::string> &superatom, int n_letters, bool show_learning,
-    int resolution_iteration, bool verbose, const std::vector<bracket_t>&  brackets);
+    int resolution_iteration, bool verbose, const std::vector<bracket_t>&  brackets,
+    std::tuple<unsigned int, std::string, int> ions);
 
 #endif

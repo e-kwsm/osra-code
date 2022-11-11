@@ -340,7 +340,8 @@ void split_fragments_and_assemble_structure_record(
     bool show_learning,
     int resolution_iteration,
     bool verbose,
-    const std::vector<bracket_t>&  brackets)
+    const std::vector<bracket_t>&  brackets,
+    std::tuple<unsigned int, std::string, int> ions)
 {
   std::vector<atom_t> frag_atom;
   std::vector<bond_t> frag_bond;
@@ -362,6 +363,10 @@ void split_fragments_and_assemble_structure_record(
       const std::vector<std::vector<int> > &frags = find_fragments(bond, n_bond, atom);
       std::vector<fragment_t> fragments = populate_fragments(frags, atom);
       std::sort(fragments.begin(), fragments.end(), comp_fragments);
+      if (fragments.size()>1)
+      	{
+      	  ions = std::make_tuple(0,"",0);
+      	}
       for (unsigned int i = 0; i < fragments.size(); i++)
         {
           if (verbose)
@@ -397,7 +402,7 @@ void split_fragments_and_assemble_structure_record(
               molecule_statistics_t molecule_statistics;
               int page_number = l + 1;
               box_t coordinate_box,rel_box;
-	       if (fragments.size()>1)
+	      if (fragments.size()>1)
 		{
 		  coordinate_box.x1 = (int) (-(double)page_scale * unpaper_dx + (double) page_scale * boxes[k].x1 + (double) page_scale * box_scale * fragments[i].x1 - (double) page_scale * FRAME);
 		  coordinate_box.y1 = (int) (-(double)page_scale * unpaper_dy + (double) page_scale * boxes[k].y1 + (double) page_scale * box_scale * fragments[i].y1 - (double) page_scale * FRAME);
@@ -436,7 +441,7 @@ void split_fragments_and_assemble_structure_record(
                                         show_resolution_guess ? &resolution : NULL,
                                         show_page ? &page_number : NULL,
                                         show_coordinates ? &coordinate_box : NULL, superatom, n_letters, show_learning, resolution_iteration, verbose,
-					brackets);
+					brackets, ions);
 
               if (molecule_statistics.fragments > 0 && molecule_statistics.fragments < MAX_FRAGMENTS
 		  && molecule_statistics.num_atoms>MIN_A_COUNT && molecule_statistics.num_bonds>0
@@ -957,7 +962,7 @@ int osra_process_image(
                 n_letters = find_plus_minus(p, orig_box, bgColor, THRESHOLD_BOND, letters, atom, bond, n_atom, n_bond, height, width,
                                             real_font_height, real_font_width, n_letters, avg_bond_length);
                 n_atom = find_small_bonds(p, atom, bond, n_atom, &n_bond, max_area, avg_bond_length / 2, 5);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
 		//remove_small_bonds_in_chars(atom,bond,letters);
 
                 find_old_aromatic_bonds(p, bond, n_bond, atom, n_atom, avg_bond_length);
@@ -1054,7 +1059,8 @@ int osra_process_image(
 		remove_zero_bonds(bond, n_bond, atom);
 		flatten_bonds(bond, n_bond, atom, 2*thickness);
 		assign_labels_to_brackets(bracket_boxes, label, n_label, letters, n_letters, real_font_width, real_font_height);
-
+		std::tuple<unsigned int, std::string, int> ions = find_ions(label, n_label);
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 collapse_atoms(atom, bond, n_atom, n_bond, 3);
 
                 remove_zero_bonds(bond, n_bond, atom);
@@ -1083,7 +1089,7 @@ int osra_process_image(
 							      box_scale,page_scale,rotation,unpaper_dx,unpaper_dy,output_format,embedded_format,is_reaction,show_confidence,
 							      show_resolution_guess,show_page,show_coordinates, show_avg_bond_length,array_of_structures,
 							      array_of_avg_bonds,array_of_ind_conf,array_of_images,array_of_boxes,total_boxes,total_confidence,
-							      num_recognized_chars,show_learning,res_iter,verbose, bracket_boxes);
+							      num_recognized_chars,show_learning,res_iter,verbose, bracket_boxes, ions);
 
                 if (st != NULL)
                   potrace_state_free(st);

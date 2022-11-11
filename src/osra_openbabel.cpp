@@ -808,6 +808,42 @@ molecule_statistics_t calculate_molecule_statistics(
   return molecule_statistics;
 }
 
+void add_ions(OBMol &mol, std::tuple<unsigned int, std::string, int> ions)
+{
+  unsigned int amount;
+  std::string element;
+  int charge;
+  std::tie(amount, element, charge) = ions;
+  if (element.empty() || amount == 0)
+    return;
+  
+  int anum = OBElements::GetAtomicNum(element.c_str());
+  if (anum <= 0)
+    return;
+
+  double x_max = -FLT_MAX, x_min = FLT_MAX,  y_max = -FLT_MAX, y_min = FLT_MAX, z_max = -FLT_MAX, z_min = FLT_MAX;
+  OBAtomIterator atom_iter;
+  for (OBAtom *a = mol.BeginAtom(atom_iter); a; a = mol.NextAtom(atom_iter))
+    {
+      x_max = std::max(x_max, a->x());
+      x_min = std::min(x_min, a->x());
+      y_max = std::max(y_max, a->y());
+      y_min = std::min(y_min, a->y());
+      z_max = std::max(z_max, a->z());
+      z_min = std::min(z_min, a->z());
+    }
+      
+  mol.BeginModify();
+  for (unsigned i = 0; i < amount; ++i)
+    {
+      OBAtom *new_atom = mol.NewAtom();
+      new_atom->SetAtomicNum(anum);
+      new_atom->SetFormalCharge(charge);
+      new_atom->SetVector(x_max + CC_BOND_LENGTH, y_min + i * (y_max - y_min) / amount, (z_min + z_max) / 2);
+    }
+  mol.EndModify();
+}
+
 const std::string get_formatted_structure(
     std::vector<atom_t> &atom, const std::vector<bond_t> &bond, int n_bond,
     const std::string &format, const std::string &embedded_format,
@@ -816,7 +852,8 @@ const std::string get_formatted_structure(
     double avg_bond_length, double scaled_avg_bond_length, bool show_avg_bond_length,
     const int * const resolution, const int * const page, const box_t * const surrounding_box,
     const std::map<std::string, std::string> &superatom, int n_letters, bool show_learning,
-    int resolution_iteration, bool verbose, const std::vector<bracket_t>& brackets)
+    int resolution_iteration, bool verbose, const std::vector<bracket_t>& brackets,
+    std::tuple<unsigned int, std::string, int> ions)
 {
   std::ostringstream strstr;
   #pragma omp critical
@@ -842,6 +879,7 @@ const std::string get_formatted_structure(
     // Deletes all atoms except for the largest contiguous fragment:
     mol.StripSalts(MIN_A_COUNT);
 
+    add_ions(mol, ions);
     
     if (show_confidence)
       {

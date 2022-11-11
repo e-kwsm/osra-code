@@ -227,7 +227,8 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
 	lb.min_y = std::min(letters[lbond[i].a].min_y,letters[lbond[i].b].min_y);
 	lb.max_x = std::max(letters[lbond[i].a].max_x, letters[lbond[i].b].max_x);
 	lb.max_y = std::max(letters[lbond[i].a].max_y,letters[lbond[i].b].max_y);
-
+	lb.free = true;
+	
         if (!isdigit(letters[lbond[i].a].a) && letters[lbond[i].a].a != '-' && letters[lbond[i].a].a != '+'
             && !found_left)
           {
@@ -335,6 +336,8 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
 	  lb.min_y = INT_MAX;
 	  lb.max_x = 0;
 	  lb.max_y = 0;
+	  lb.free = true;
+	  
           for (unsigned int j = 0; j < old_label_n.size(); j++)
             {
               if (letters[old_label_n[j]].y > cy)
