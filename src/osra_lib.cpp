@@ -363,10 +363,6 @@ void split_fragments_and_assemble_structure_record(
       const std::vector<std::vector<int> > &frags = find_fragments(bond, n_bond, atom);
       std::vector<fragment_t> fragments = populate_fragments(frags, atom);
       std::sort(fragments.begin(), fragments.end(), comp_fragments);
-      if (fragments.size()>1)
-      	{
-      	  ions = std::make_tuple(0,"",0);
-      	}
       for (unsigned int i = 0; i < fragments.size(); i++)
         {
           if (verbose)
@@ -1051,7 +1047,7 @@ int osra_process_image(
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
 
                 extend_terminal_bond_to_bonds(atom, bond, n_bond, avg_bond_length, 2 * thickness, max_dist_double_bond);
-
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 std::vector<bracket_t> bracket_boxes;
 		remove_bracket_atoms(atom, n_atom, bond, n_bond, brackets, thickness, boxes[k].x1, boxes[k].y1, box_scale, real_font_width, real_font_height, bracket_boxes);
 		remove_zero_bonds(bond, n_bond, atom);
@@ -1060,7 +1056,6 @@ int osra_process_image(
 		flatten_bonds(bond, n_bond, atom, 2*thickness);
 		assign_labels_to_brackets(bracket_boxes, label, n_label, letters, n_letters, real_font_width, real_font_height);
 		std::tuple<unsigned int, std::string, int> ions = find_ions(label, n_label);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 collapse_atoms(atom, bond, n_atom, n_bond, 3);
 
                 remove_zero_bonds(bond, n_bond, atom);

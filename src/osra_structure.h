@@ -428,7 +428,7 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes, std::vecto
 			       int real_font_width, int real_font_height);
 
 void remove_vertical_bonds_close_to_brackets(const std::vector<bracket_t> &bracket_boxes,
-                                             std::vector<atom_t> &atom, const std::vector<bond_t> &bond,
+                                             std::vector<atom_t> &atom, std::vector<bond_t> &bond,
                                              int n_bond, double thickness, double avg_bond_length);
 
 

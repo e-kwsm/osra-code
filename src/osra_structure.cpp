@@ -2771,7 +2771,6 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
   thickness *= box_scale;
   double scaled_font_width = box_scale * real_font_width;
   double scaled_font_height = box_scale * real_font_height;
-  thickness = std::max(10., thickness);
   std::vector<int> connected(atom.size(), 0);
   for (size_t i = 0; i < n_bond; i++)
     if (bond[i].exists)
@@ -2780,28 +2779,24 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	connected[bond[i].b]++;
       }
   std::vector<point_t> confirmed;
-  std::vector<bool> available(n_atom, true);
-  for (std::set<std::pair<int, int> >::const_iterator j = brackets.begin(); j != brackets.end(); ++j)
-    {
-      bool found(false);
-      for (int i = 0; i < n_atom; i++)
-	{
-	  if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && connected[i] < 2 && available[i])
+ 
+  for (int i = 0; i < n_atom; i++)
+    if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && connected[i] < 3)
+      {
+	bool found(false);
+	double x =   (double)  box_scale * atom[i].x + box_x -  FRAME;
+	double y =   (double)  box_scale * atom[i].y + box_y -  FRAME;
+	for (std::set<std::pair<int, int> >::const_iterator j = brackets.begin(); j != brackets.end(); ++j)
+	  if (distance(x, y, j->first, j->second) < thickness)
 	    {
-	      double x =   (double)  box_scale * atom[i].x + box_x -  FRAME;
-	      double y =   (double)  box_scale * atom[i].y + box_y -  FRAME;
-	      if (distance(x, y, j->first, j->second) < thickness)
-		{
-		  found = true;
-		  available[i] = false;
-		}
+	      found = true;
 	    }
-        }
-      if (found)
-	{
-	  confirmed.push_back(point_t(j->first, j->second));
-	}
-    }
+	if (found)
+	  {
+	    confirmed.push_back(point_t(x, y));
+	  }
+      }
+    
 
   std::vector<std::pair<point_t, point_t> > horizontals;
   for (int i = 0; i < confirmed.size(); i++)
@@ -2849,7 +2844,7 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	  box_t b = bracket_boxes[i];
 	  for (int k = 0; k < n_atom; k++)
 	    {
-	      if (atom[k].exists  && (atom[k].label == " " || atom[k].label.empty()) && connected[k] < 2)
+	      if (atom[k].exists  && (atom[k].label == " " || atom[k].label.empty()) && connected[k] < 3)
 		{
 		    double x =   (double)  box_scale * atom[k].x + box_x -  FRAME;
 		    double y =   (double)  box_scale * atom[k].y + box_y -  FRAME;
@@ -2862,7 +2857,6 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	    }
 	}
     }
-
   for (int i = 0; i < bracket_boxes.size(); i++)
     {
       if (bracket_boxes[i].x1 != -1)
@@ -2889,14 +2883,13 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	  bracket_t bracket;
 	  bracket.box = b;
 	  reduced_bracket_boxes.push_back(bracket);
-	  //cout << b.x1 << " " << b.y1 << " " << b.x2 << " " << b.y2 << endl;
 	}
     }
 }
 
 void remove_vertical_bonds_close_to_brackets(
     const std::vector<bracket_t> &bracket_boxes, std::vector<atom_t> &atom,
-    const std::vector<bond_t> &bond, int n_bond, double thickness, double avg_bond_length)
+    std::vector<bond_t> &bond, int n_bond, double thickness, double avg_bond_length)
 {
   std::vector<int> connected(atom.size(), 0);
   for (size_t i = 0; i < n_bond; i++)
@@ -2917,14 +2910,16 @@ void remove_vertical_bonds_close_to_brackets(
 	  {
 	    int a = bond[j].a;
 	    int b = bond[j].b;
-	    if (fabs(atom[a].x - atom[b].x) < 2 * thickness)
+	    double xa =   (double)  atom[a].x;
+	    double ya =   (double)  atom[a].y;
+	    double xb =   (double)  atom[b].x;
+	    double yb =   (double)  atom[b].y;
+	    if (fabs(xa - xb) < 2 * thickness)
 	      {
 		if (connected[a] == 1)
-		  {
-		    double x =   (double)  atom[a].x;
-		    double y =   (double)  atom[a].y;
-		    if ((fabs(y - y1) < 3 * thickness || fabs(y - y2) < 3 * thickness) &&
-			(fabs(x1 - x) < avg_bond_length / 2 || fabs(x - x2) < avg_bond_length / 2))
+		  {		   
+		    if ((fabs(ya - y1) < 3 * thickness || fabs(ya - y2) < 3 * thickness) &&
+			(fabs(x1 - xa) < avg_bond_length / 2 || fabs(xa - x2) < avg_bond_length / 2))
 		      {
 			atom[a].exists = false;
 			continue;
@@ -2932,15 +2927,18 @@ void remove_vertical_bonds_close_to_brackets(
 		  }
 		  if (connected[b] == 1)
 		    {
-		      double x =   (double)  atom[b].x;
-		      double y =   (double)  atom[b].y;
-		      if ( (fabs(y - y1) < 3 * thickness || fabs(y - y2) < 3 * thickness) &&
-			   (fabs(x1 - x) < avg_bond_length / 2 || fabs(x - x2) < avg_bond_length / 2))
+		      if ( (fabs(yb - y1) < 3 * thickness || fabs(yb - y2) < 3 * thickness) &&
+			   (fabs(x1 - xb) < avg_bond_length / 2 || fabs(xb - x2) < avg_bond_length / 2))
 			{
 			  atom[b].exists = false;
 			  continue;
 			}
 		    }
+		  if (ya > y1 && ya < y2 && yb > y1 && yb < y2 &&
+		      (fabs(xa - x1) < 2*thickness || fabs(xa - x2) < 2*thickness))
+		    {
+		      bond[j].exists = false;
+		    }		  
 	      }
 	  }
     }
@@ -3114,6 +3112,7 @@ std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label
     }
   if (amount == 0 && !element.empty())
     amount = 1;
+
   return std::make_tuple(amount, element, charge);
 }
 

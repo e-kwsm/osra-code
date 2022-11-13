@@ -814,6 +814,7 @@ void add_ions(OBMol &mol, std::tuple<unsigned int, std::string, int> ions)
   std::string element;
   int charge;
   std::tie(amount, element, charge) = ions;
+
   if (element.empty() || amount == 0)
     return;
   
