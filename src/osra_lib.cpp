@@ -1047,13 +1047,11 @@ int osra_process_image(
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
 
                 extend_terminal_bond_to_bonds(atom, bond, n_bond, avg_bond_length, 2 * thickness, max_dist_double_bond);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 std::vector<bracket_t> bracket_boxes;
 		remove_bracket_atoms(atom, n_atom, bond, n_bond, brackets, thickness, boxes[k].x1, boxes[k].y1, box_scale, real_font_width, real_font_height, bracket_boxes);
 		remove_zero_bonds(bond, n_bond, atom);
-		remove_vertical_bonds_close_to_brackets(bracket_boxes, atom, bond, n_bond, thickness, avg_bond_length);
-		remove_zero_bonds(bond, n_bond, atom);
 		flatten_bonds(bond, n_bond, atom, 2*thickness);
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 		assign_labels_to_brackets(bracket_boxes, label, n_label, letters, n_letters, real_font_width, real_font_height);
 		std::tuple<unsigned int, std::string, int> ions = find_ions(label, n_label);
                 collapse_atoms(atom, bond, n_atom, n_bond, 3);

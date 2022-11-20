@@ -418,7 +418,7 @@ int find_wavy_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<ato
 void remove_small_bonds_in_chars(std::vector<atom_t> &atom, std::vector<bond_t> &bond,
                                  std::vector<letters_t> &letters);
 
-void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom, const std::vector<bond_t> &bond, int n_bond,
+void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom, std::vector<bond_t> &bond, int n_bond,
                           const std::set<std::pair<int, int> > &brackets, double thickness, int box_x,
                           int box_y, double box_scale, int real_font_width,int real_font_height,
 			  std::vector<bracket_t> &reduced_bracket_boxes);
@@ -426,11 +426,6 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom, const std::vect
 void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes, std::vector<label_t> &label,
                                int n_label, std::vector<letters_t> &letters, int n_letters,
 			       int real_font_width, int real_font_height);
-
-void remove_vertical_bonds_close_to_brackets(const std::vector<bracket_t> &bracket_boxes,
-                                             std::vector<atom_t> &atom, std::vector<bond_t> &bond,
-                                             int n_bond, double thickness, double avg_bond_length);
-
 
 void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, double avg);
 
