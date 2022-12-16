@@ -1626,3 +1626,37 @@ void remove_small_terminal_bonds(std::vector<bond_t> &bond, int n_bond, std::vec
           }
     }
 }
+
+int remove_plus_minus_next_to_hash_bond(std::vector<letters_t> &letters, int n_letters, const std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, double avg)
+{
+  for (int i=0; i < n_bond; ++i)
+    if (bond[i].exists && bond[i].hash)
+      {
+	double xa = atom[bond[i].a].x;
+        double ya = atom[bond[i].a].y;
+        double xb = atom[bond[i].b].x;
+        double yb = atom[bond[i].b].y;
+
+	  for (int j = 0; j < n_letters; ++j)
+	    if (letters[j].free && (letters[j].a == '+' || letters[j].a == '-'))
+                {
+                  double da = fabs(distance_from_bond_x_a(xa, ya, xb, yb, letters[j].x, letters[j].y));
+		  double db = fabs(distance_from_bond_x_b(xa, ya, xb, yb, letters[j].x, letters[j].y));
+		  double d = std::min(da, db);
+                  double h = fabs(distance_from_bond_y(xa, ya, xb, yb, letters[j].x, letters[j].y));
+                  if (d < avg / 2 && h < letters[j].r)
+                    {
+		      letters[j].a = 0;		      
+                    }
+                }
+      }
+  std::vector<letters_t> new_letters;
+  new_letters.reserve(letters.size());
+  for (int j = 0; j < n_letters; ++j)
+    if (letters[j].a != 0)
+      {
+	new_letters.emplace_back(letters[j]);
+      }
+  std::swap(letters, new_letters);
+  return letters.size();
+}

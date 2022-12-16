@@ -833,7 +833,7 @@ void add_ions(OBMol &mol, std::tuple<unsigned int, std::string, int> ions)
       z_max = std::max(z_max, a->z());
       z_min = std::min(z_min, a->z());
     }
-      
+
   mol.BeginModify();
   for (unsigned i = 0; i < amount; ++i)
     {
@@ -842,7 +842,14 @@ void add_ions(OBMol &mol, std::tuple<unsigned int, std::string, int> ions)
       new_atom->SetFormalCharge(charge);
       new_atom->SetVector(x_max + CC_BOND_LENGTH, y_min + i * (y_max - y_min) / amount, (z_min + z_max) / 2);
     }
-  mol.EndModify();
+
+  for (OBAtom *a = mol.BeginAtom(atom_iter); a; a = mol.NextAtom(atom_iter))
+    if (a->IsMetal())
+      {
+	a->SetFormalCharge(-1 * amount * charge);
+	break;
+      }
+  mol.EndModify();  
 }
 
 const std::string get_formatted_structure(
@@ -872,16 +879,17 @@ const std::string get_formatted_structure(
     // Add hydrogens to the entire molecule to fill out implicit valence spots:
     bool ok = mol.AddHydrogens(true, false);
     mol.DeleteData(OBGenericDataType::StereoData);
-    
+
     // Add single bonds based on atom proximity:
     mol.ConnectTheDots();
+
     // Copies each disconnected fragment as a separate OBMol:
     //mol.Separate();
     // Deletes all atoms except for the largest contiguous fragment:
     mol.StripSalts(MIN_A_COUNT);
 
-    add_ions(mol, ions);
-    
+    add_ions(mol, ions);      
+
     if (show_confidence)
       {
         OBPairData *label = new OBPairData;

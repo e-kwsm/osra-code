@@ -279,4 +279,7 @@ int find_fused_chars(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> 
                      std::vector<letters_t> &letters, int n_letters, int max_font_height,
                      int max_font_width, char dummy, const Image &orig, const ColorGray &bgColor,
                      double THRESHOLD, unsigned int size, bool verbose, const std::string &recognized_chars);
+
+int remove_plus_minus_next_to_hash_bond(std::vector<letters_t> &letters, int n_letters, const std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, double avg);
+
 #endif
