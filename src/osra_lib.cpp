@@ -1037,6 +1037,7 @@ int osra_process_image(
 
                 extend_terminal_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length / 2,
 					      thickness, max_dist_double_bond);
+		if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
                 collapse_atoms(atom, bond, n_atom, n_bond, thickness);
@@ -1076,7 +1077,6 @@ int osra_process_image(
                 if (verbose)
                   std::cout << "Final number of atoms: " << real_atoms << ", bonds: " << real_bonds << ", chars: " << n_letters << '.' << std::endl;
 
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 split_fragments_and_assemble_structure_record(atom,n_atom,bond,n_bond,boxes,
 							      l,k,resolution,res_iter,output_image_file_prefix,image,orig_box,real_font_width,real_font_height,
 							      thickness,avg_bond_length,superatom,real_atoms,real_bonds,bond_max_type,
