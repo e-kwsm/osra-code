@@ -27,6 +27,7 @@
 #include <float.h> // FLT_MAX
 #include <iostream> // std::cout
 #include <set>
+#include <stack>  
 
 #include "osra_common.h"
 #include "osra_structure.h"
@@ -2761,6 +2762,40 @@ bool overlap_boxes(const box_t &a, const box_t &b)
     return true;
 }
 
+bool in_ring(const std::vector<std::vector<std::pair<int,int> > > &adjacency,
+	 const int n_bond, const int start, const int max_depth = 6)
+{
+  std::vector<bool> visited(n_bond, false); 
+  int current_depth = 0;
+  std::stack<std::pair<int, int> > todo;
+  todo.push(std::make_pair(start, current_depth));
+  while (!todo.empty())
+    {
+      auto top = todo.top();
+      int current_node = top.first;
+      current_depth = top.second + 1;
+      for (int i = 0; i < adjacency[current_node].size(); ++i)
+	{
+	  const auto &bond_node = adjacency[current_node][i];
+	  int b = bond_node.first;
+	  int n = bond_node.second;
+	  if (visited[b])
+	    continue;
+	  visited[b] = true;
+	  if (n == start)
+	    return true;
+	  if (current_depth < max_depth)
+	    {
+	      todo.push(std::make_pair(n, current_depth));
+	      break;
+	    }
+	}
+      if (todo.top().first == current_node)
+	todo.pop();
+    }
+  return false;
+}
+
 void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 			  std::vector<bond_t> &bond, int n_bond,
                           const std::set<std::pair<int, int> > &brackets,
@@ -2773,6 +2808,7 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
   double scaled_font_width = box_scale * real_font_width;
   double scaled_font_height = box_scale * real_font_height;
   std::vector<int> bond_type(n_atom, 0);
+  std::vector<std::vector<std::pair<int,int> > > adjacency(n_atom);
   for (int i = 0; i < n_bond; ++i)
     if (bond[i].exists)
     {
@@ -2783,11 +2819,14 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	   bond_type[bond[i].a] = std::max(bond_type[bond[i].a], 2);
 	   bond_type[bond[i].b] = std::max(bond_type[bond[i].b], 2);
 	}
+      adjacency[bond[i].a].push_back(std::make_pair(i, bond[i].b));
+      adjacency[bond[i].b].push_back(std::make_pair(i, bond[i].a));
     }
+  
   std::vector<point_t> confirmed;
   std::vector<bool> remove_atoms(n_atom, false);
   for (int i = 0; i < n_atom; i++)
-    if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && bond_type[i] == 1)
+    if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && bond_type[i] == 1 && !in_ring(adjacency, n_bond, i))
       {
 	bool found = false;
 	double x =   (double)  box_scale * atom[i].x + box_x -  FRAME;
@@ -2874,11 +2913,9 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
     }
  
   for (int i = 0; i < n_bond; ++i)
-    if (bond[i].exists)
-      {
-	if (remove_atoms[bond[i].a] && remove_atoms[bond[i].b])
-	  bond[i].exists = false;
-      }
+    if (bond[i].exists && remove_atoms[bond[i].a] && remove_atoms[bond[i].b])
+      bond[i].exists = false;
+
   for (int i = 0; i < n_bond; ++i)
     if (bond[i].exists)
       {
@@ -2887,6 +2924,7 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
 	if (remove_atoms[bond[i].b] && !remove_atoms[bond[i].a])
 	  remove_atoms[bond[i].b] = false;
       }  
+
   for (int i = 0; i < n_atom; ++i)
     if (remove_atoms[i])
       atom[i].exists = false;
