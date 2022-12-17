@@ -2522,10 +2522,10 @@ void find_old_aromatic_bonds(const potrace_path_t *p, std::vector<bond_t> &bond,
                   for (unsigned int i = 0; i < vert.size(); i++)
                     {
                       double dist = distance(atom[vert[i]].x, atom[vert[i]].y, center_x, center_y);
-                      if (fabs(dist - diameter / 2) > V_DISPLACEMENT)
+                      if (floor(fabs(dist - diameter / 2)) > V_DISPLACEMENT)
                         centered = false;
                     }
-
+		  
                   if (circum < PI * diameter && diameter > avg / 2 && diameter < 3 * avg && centered)
                     {
                       delete_curve_with_children(atom, bond, n_atom, n_bond, p1);

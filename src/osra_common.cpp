@@ -239,6 +239,10 @@ void debug_image(Image image, const std::vector<atom_t> &atom, int n_atom,
             {
               image.strokeColor("purple");
             }
+	  if (bond[i].arom)
+            {
+              image.strokeColor("cyan");
+            }
           image.draw(DrawableLine(atom[bond[i].a].x, atom[bond[i].a].y, atom[bond[i].b].x, atom[bond[i].b].y));
         }
     }
@@ -316,11 +320,10 @@ int count_bonds(const std::vector<bond_t> &bond, int n_bond, int &bond_max_type)
 
 bool detect_curve(std::vector<bond_t> &bond, int n_bond, const potrace_path_t * const curve)
 {
-  bool res = false;
   for (int i = 0; i < n_bond; i++)
     if (bond[i].exists && bond[i].curve == curve && bond[i].type == 1 && !bond[i].wedge && !bond[i].hash)
-      res = true;
-  return (res);
+      return true;
+  return false;
 }
 
 

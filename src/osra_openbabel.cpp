@@ -381,7 +381,7 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
       mol.SetAromaticPerceived(false);
     }
   mol.EndModify();
-
+ 
   mol.FindRingAtomsAndBonds();
 
   // Clear the counters of created OBAtom objects:
@@ -409,8 +409,10 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
           //b->UnsetDown();
         }
       else
-        // Clear all aromaticity information for the bond (affects "num_aromatic" variable below):
-        b->SetAromatic(false);
+	{
+	  // Clear all aromaticity information for the bond (affects "num_aromatic" variable below):
+	  b->SetAromatic(false);
+	}
       if (b->IsHash())
 	Num_HashBonds++;
       if (b->IsWedge())
