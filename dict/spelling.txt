@@ -521,5 +521,6 @@ OS Os
 Il Ir
 ClCl3 CrCl3
 IlI3C2N NMe2
+C2O C20
 
 

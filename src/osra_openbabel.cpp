@@ -613,7 +613,22 @@ void create_molecule(OBMol &mol, std::vector<atom_t> &atom,
 
       for (unsigned int i = 0; i < super_atoms.size(); i++)
         {
-          groupRedraw(&mol, super_bonds[i], super_atoms[i], true);
+          int result = groupRedraw(&mol, super_bonds[i], super_atoms[i], true);
+	  if (result != 0)
+	    {
+	      OBAtom *a = mol.GetAtom(super_atoms[i]);
+	      int k = 0;
+	      OBBondIterator bond_iter;
+	      for (OBAtom *b = a->BeginNbrAtom(bond_iter); b; b = a->NextNbrAtom(bond_iter))
+		if (b->GetX() == 0 && b->GetY() == 0 && b->GetZ() == 0)
+		  {
+		    double x = a->GetX() +  0.5 * CC_BOND_LENGTH * cos(k * 2 * PI / a->GetExplicitDegree());
+		    double y = a->GetY() -  0.5 * CC_BOND_LENGTH * sin(k * 2 * PI / a->GetExplicitDegree());
+		    double z = a->GetZ();
+		    b->SetVector(x, y, z);		    
+		    ++k;
+		  }
+	    }
         }
 
       if (!brackets.empty())
