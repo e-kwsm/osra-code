@@ -413,3 +413,44 @@ bool comp_boxes(const box_t &aa, const box_t &bb)
   return (false);
 }
 
+bool is_point_within_dist_of_rect(double x1, double y1, double x2, double y2, double x, double y, double dist)
+{
+    
+    if ( x1 - dist < x && x < x2 + dist)
+      {
+        if (x < x1)
+	  {
+            double a = x1 - x;
+	    double y_max = y2 + sqrt(dist * dist - a * a);
+            double y_min = y1 - sqrt(dist * dist - a * a);
+            
+            if (y_min < y && y < y_max)
+	      return true;
+	    else
+	      return false;
+	  }
+        else if (x < x2)
+	  {
+            double y_max = y2 + dist;
+            double y_min = y1 - dist;
+            
+            if (y_min < y && y < y_max)
+	      return true;
+            else
+	      return false;
+	  }
+        else
+	  {
+            double a = x2 - x;
+            double y_max = y2 + sqrt(dist * dist - a * a);
+            double y_min = y1 - sqrt(dist * dist - a * a);
+            
+            if (y_min <y && y < y_max)
+	      return true;
+            else
+	      return false;
+	  }
+      }
+    return false;
+}
+      

@@ -164,7 +164,7 @@ bool comp_letters(const letters_t &left, const letters_t &right)
 
 bool is_general_digit(char a)
 {
-  return(isdigit(a) || a == 'O' || a == 'l');
+  return(isdigit(a) || toupper(a) == 'O' || a == 'l');
 }
 
 int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<label_t> &label)
@@ -307,7 +307,7 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
       int n = 0;
 
       for (unsigned int j = 0; j < label[i].n.size(); j++)
-        if (isalpha(letters[label[i].n[j]].a) && letters[label[i].n[j]].a != 'O' && letters[label[i].n[j]].a != 'l')
+        if (isalpha(letters[label[i].n[j]].a) && toupper(letters[label[i].n[j]].a) != 'O' && letters[label[i].n[j]].a != 'l')
           {
             cy += letters[label[i].n[j]].y;
             n++;
@@ -317,7 +317,7 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
 	  cy /= n;
 	  n = 0;
 	  for (unsigned int j = 0; j < label[i].n.size(); j++)
-	    if (isalpha(letters[label[i].n[j]].a) && letters[label[i].n[j]].a != 'O' && letters[label[i].n[j]].a != 'l' && letters[label[i].n[j]].y - cy > letters[label[i].n[j]].r / 2)
+	    if (isalpha(letters[label[i].n[j]].a) && toupper(letters[label[i].n[j]].a) != 'O' && letters[label[i].n[j]].a != 'l' && letters[label[i].n[j]].y - cy > letters[label[i].n[j]].r / 2)
 	      n++;
 	}
 
@@ -396,7 +396,6 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
   
   for (int i = 0; i < label.size(); i++)
     {
-      //cout<<label[i].a<<" "<<label[i].min_x<<" "<<label[i].min_y<<" "<<label[i].max_x<<" "<<label[i].max_y<<endl;
       bool cont = true;
       std::string charges = "";
       while (cont)
@@ -681,7 +680,8 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
   potrace_dpoint_t (*c)[3];
   real_font_width = 0;
   real_font_height = 0;
-
+  int hor_displacement[] = {0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6};
+  
   while (p != NULL)
     {
       if ((p->sign == int('+')))
@@ -943,18 +943,27 @@ int find_chars(const potrace_path_t * p, const Image &orig, std::vector<letters_
           if (((bottom - top) <= max_font_height) && ((right - left) <= 2 * max_font_width) && (right - left
               > V_DISPLACEMENT) && (bottom - top > MIN_FONT_HEIGHT) && !found)
             {
-
-              char label1 = 0;
-              int newright = (left + right) / 2;
-              label1 = get_atom_label(orig, bgColor, left, top, newright, bottom, THRESHOLD, (left + newright) / 2,
-                                      top, false, verbose, false, recognized_chars);
-              char label2 = 0;
-              int newleft = (left + right) / 2;
-              label2 = get_atom_label(orig, bgColor, newleft, top, right, bottom, THRESHOLD, (newleft + right) / 2,
-                                      top, false, verbose, false, recognized_chars);
+	      char label1 = 0;
+	      char label2 = 0;
+	      int newright = (left + right) / 2;
+	      int newleft = newright;
+	      for (auto hor_disp : hor_displacement)
+		{
+		  label1 = 0;
+		  newright = (left + right) / 2 + hor_disp;
+		  if (newright - left > V_DISPLACEMENT)
+		    label1 = get_atom_label(orig, bgColor, left, top, newright, bottom, THRESHOLD, (left + newright) / 2,
+					    top, false, verbose, false, recognized_chars);
+		  label2 = 0;
+		  newleft = newright;
+		  if (right - newleft > V_DISPLACEMENT)
+		    label2 = get_atom_label(orig, bgColor, newleft, top, right, bottom, THRESHOLD, (newleft + right) / 2,
+					    top, false, verbose, false, recognized_chars);
+		  if (label1 && label2)
+		    break;
+		}
               if ((label1 != 0) && (label2 != 0))
                 {
-                  //cout << label1 << label2 << endl;
                   letters_t lt1;
                   letters.push_back(lt1);
                   letters[n_letters].a = label1;

@@ -811,23 +811,9 @@ void extend_terminal_bond_to_label(
                 {
                   double d1 = distance_from_bond_x_a(xa, ya, xb, yb, label[i].x1, label[i].y1);
                   double d2 = distance_from_bond_x_a(xa, ya, xb, yb, label[i].x2, label[i].y2);
-                  double h1 = fabs(distance_from_bond_y(xa, ya, xb, yb, label[i].x1, label[i].y1));
-                  double h2 = fabs(distance_from_bond_y(xa, ya, xb, yb, label[i].x2, label[i].y2));
-                  double y_dist = maxh + label[i].r1 / 2;
-                  if (bond[j].type > 1)
-                    y_dist += max_dist_double_bond;
-                  double nb = fabs(d1) - label[i].r1 / 2;
-                  if (nb <= avg && h1 <= y_dist && nb < minb && d1 < bl / 2)
-                    {
-                      found1 = true;
-                      l1 = i;
-                      minb = nb;
-                    }
-                  y_dist = maxh + label[i].r2 / 2;
-                  if (bond[j].type > 1)
-                    y_dist += max_dist_double_bond;
-                  nb = fabs(d2) - label[i].r2 / 2;
-                  if (nb <= avg && h2 <= y_dist && nb < minb && d2 < bl / 2)
+                  double nb = std::min(d1, d2);
+
+                  if (is_point_within_dist_of_rect(label[i].min_x, label[i].min_y, label[i].max_x, label[i].max_y, xa, ya, avg) && nb < minb)
                     {
                       found1 = true;
                       l1 = i;
@@ -885,28 +871,13 @@ void extend_terminal_bond_to_label(
                 {
                   double d1 = distance_from_bond_x_b(xa, ya, xb, yb, label[i].x1, label[i].y1);
                   double d2 = distance_from_bond_x_b(xa, ya, xb, yb, label[i].x2, label[i].y2);
-                  double h1 = fabs(distance_from_bond_y(xa, ya, xb, yb, label[i].x1, label[i].y1));
-                  double h2 = fabs(distance_from_bond_y(xa, ya, xb, yb, label[i].x2, label[i].y2));
-                  double y_dist = maxh + label[i].r1 / 2;
-                  if (bond[j].type > 1)
-                    y_dist += max_dist_double_bond;
-                  double nb = fabs(d1) - label[i].r1 / 2; // end "b" and 1st side
-                  if (nb <= avg && h1 <= y_dist && nb < minb && d1 > -bl / 2)
+		  double nb = std::min(d1, d2);
+                  if (is_point_within_dist_of_rect(label[i].min_x, label[i].min_y, label[i].max_x, label[i].max_y, xb, yb, avg) && nb < minb)
                     {
                       found1 = true;
                       l1 = i;
                       minb = nb;
-                    }
-                  y_dist = maxh + label[i].r2 / 2;
-                  if (bond[j].type > 1)
-                    y_dist += max_dist_double_bond;
-                  nb = fabs(d2) - label[i].r2 / 2; // end "b" and 2nd side
-                  if (nb <= avg && h2 <= y_dist && nb < minb && d2 > -bl / 2)
-                    {
-                      found1 = true;
-                      l1 = i;
-                      minb = nb;
-                    }
+                    }                 
                 }
             for (int i = 0; i < n_letters; i++)
               if (letters[i].free && letters[i].a != '+' && letters[i].a != '-' && i != l2)
