@@ -2746,16 +2746,15 @@ void find_limits_on_avg_bond(double &best_bond,
         }
 }
 
-void remove_small_bonds_in_chars(std::vector<atom_t> &atom, std::vector<bond_t> &bond,
-                                 std::vector<letters_t> &letters)
+void remove_small_bonds_in_chars(const std::vector<atom_t> &atom, std::vector<bond_t> &bond, const std::vector<label_t> &label)
 {
   for (int i = 0; i < bond.size(); i++)
     if (bond[i].exists)
-      for (int j=0; j < letters.size(); j++)
-	if (atom[bond[i].a].x >= letters[j].min_x && atom[bond[i].a].x <= letters[j].max_x &&
-	    atom[bond[i].a].y >= letters[j].min_y && atom[bond[i].a].y <= letters[j].max_y &&
-	    atom[bond[i].b].x >= letters[j].min_x && atom[bond[i].b].x <= letters[j].max_x &&
-	    atom[bond[i].b].y >= letters[j].min_y && atom[bond[i].b].y <= letters[j].max_y)
+      for (int j=0; j < label.size(); j++)
+	if (atom[bond[i].a].x >= label[j].min_x && atom[bond[i].a].x <= label[j].max_x &&
+	    atom[bond[i].a].y >= label[j].min_y && atom[bond[i].a].y <= label[j].max_y &&
+	    atom[bond[i].b].x >= label[j].min_x && atom[bond[i].b].x <= label[j].max_x &&
+	    atom[bond[i].b].y >= label[j].min_y && atom[bond[i].b].y <= label[j].max_y)
 	  bond[i].exists = false;
 }
 

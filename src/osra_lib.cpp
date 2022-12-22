@@ -959,7 +959,6 @@ int osra_process_image(
                                             real_font_height, real_font_width, n_letters, avg_bond_length);
                 n_atom = find_small_bonds(p, atom, bond, n_atom, &n_bond, max_area, avg_bond_length / 2, 5);
 
-		//remove_small_bonds_in_chars(atom,bond,letters);
 
                 find_old_aromatic_bonds(p, bond, n_bond, atom, n_atom, avg_bond_length);
 
@@ -1017,7 +1016,8 @@ int osra_process_image(
 
 		n_letters = remove_plus_minus_next_to_hash_bond(letters, n_letters, bond, n_bond, atom, avg_bond_length);
                 n_label = assemble_labels(letters, n_letters, label);
-
+		remove_small_bonds_in_chars(atom, bond, label);
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
                 if (verbose)
                   std::cout << n_label << " labels: " << label << " after assemble_labels()" << std::endl;
 
@@ -1037,7 +1037,6 @@ int osra_process_image(
 
                 extend_terminal_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length / 2,
 					      thickness, max_dist_double_bond);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
                 collapse_atoms(atom, bond, n_atom, n_bond, thickness);
@@ -1076,6 +1075,7 @@ int osra_process_image(
 
                 if (verbose)
                   std::cout << "Final number of atoms: " << real_atoms << ", bonds: " << real_bonds << ", chars: " << n_letters << '.' << std::endl;
+
 
                 split_fragments_and_assemble_structure_record(atom,n_atom,bond,n_bond,boxes,
 							      l,k,resolution,res_iter,output_image_file_prefix,image,orig_box,real_font_width,real_font_height,

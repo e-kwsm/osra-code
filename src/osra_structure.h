@@ -415,8 +415,7 @@ void find_limits_on_avg_bond(double &best_bond, const std::vector<std::vector<do
 int find_wavy_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, double avg);
 
 
-void remove_small_bonds_in_chars(std::vector<atom_t> &atom, std::vector<bond_t> &bond,
-                                 std::vector<letters_t> &letters);
+void remove_small_bonds_in_chars(const std::vector<atom_t> &atom, std::vector<bond_t> &bond, const std::vector<label_t> &label);
 
 void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom, std::vector<bond_t> &bond, int n_bond,
                           const std::set<std::pair<int, int> > &brackets, double thickness, int box_x,

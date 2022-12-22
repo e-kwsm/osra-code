@@ -154,20 +154,17 @@ int remove_small_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<
 
 bool comp_lbonds(const lbond_t &left, const lbond_t &right)
 {
-  if (left.x < right.x)
-    return (true);
-  if (left.x > right.x)
-    return (false);
-  return (false);
+  return (left.x < right.x);
 }
 
 bool comp_letters(const letters_t &left, const letters_t &right)
 {
-  if (left.x < right.x)
-    return (true);
-  if (left.x > right.x)
-    return (false);
-  return (false);
+  return (left.x < right.x);
+}
+
+bool is_general_digit(char a)
+{
+  return(isdigit(a) || a == 'O' || a == 'l');
 }
 
 int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<label_t> &label)
@@ -182,7 +179,7 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
       for (int j = i + 1; j < letters.size(); j++)
 	{
 	  bool digits = fabs(letters[i].y - letters[j].y) < (letters[i].r + letters[j].r)
-							    && ((letters[i].y < letters[j].y  && isdigit(letters[j].a)) || ((letters[j].y < letters[i].y) && isdigit(letters[i].a)));
+							    && ((letters[i].y < letters[j].y  && is_general_digit(letters[j].a)) || ((letters[j].y < letters[i].y) && is_general_digit(letters[i].a)));
 	  bool alphanum = distance(letters[i].x, letters[i].y, letters[j].x, letters[j].y) < 2 * std::max(letters[i].r, letters[j].r)
 											     && (fabs(letters[i].y - letters[j].y) < std::min(letters[i].r, letters[j].r)
 												 || fabs(letters[i].x - letters[j].x) < std::min(letters[i].r, letters[j].r)
@@ -204,9 +201,9 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
 	    }
 	}
     }
-
+  					       
   std::sort(lbond.begin(), lbond.end(), comp_lbonds);
-
+  
   for (int i = 0; i < lbond.size(); i++)
     if (lbond[i].exists)
       {
@@ -302,23 +299,27 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
         label.push_back(lb);
       }
 
-   int old_n_label = label.size();
+  
+  int old_n_label = label.size();
   for (int i = 0; i < old_n_label; i++)
     {
       double cy = 0;
       int n = 0;
 
       for (unsigned int j = 0; j < label[i].n.size(); j++)
-        if (isalpha(letters[label[i].n[j]].a))
+        if (isalpha(letters[label[i].n[j]].a) && letters[label[i].n[j]].a != 'O' && letters[label[i].n[j]].a != 'l')
           {
             cy += letters[label[i].n[j]].y;
             n++;
           }
-      cy /= n;
-      n = 0;
-      for (unsigned int j = 0; j < label[i].n.size(); j++)
-        if (isalpha(letters[label[i].n[j]].a) && letters[label[i].n[j]].y - cy > letters[label[i].n[j]].r / 2)
-          n++;
+      if (n > 0)
+	{
+	  cy /= n;
+	  n = 0;
+	  for (unsigned int j = 0; j < label[i].n.size(); j++)
+	    if (isalpha(letters[label[i].n[j]].a) && letters[label[i].n[j]].a != 'O' && letters[label[i].n[j]].a != 'l' && letters[label[i].n[j]].y - cy > letters[label[i].n[j]].r / 2)
+	      n++;
+	}
 
       if (n > 1)
         {
@@ -392,7 +393,7 @@ int assemble_labels(std::vector<letters_t> &letters, int n_letters, std::vector<
           label.push_back(lb);
         }
     }
-
+  
   for (int i = 0; i < label.size(); i++)
     {
       //cout<<label[i].a<<" "<<label[i].min_x<<" "<<label[i].min_y<<" "<<label[i].max_x<<" "<<label[i].max_y<<endl;
