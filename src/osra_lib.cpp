@@ -1108,34 +1108,47 @@ int osra_process_image(
 	      total_structure_count++;
 	    }
 	 else
-	   {
-	     std::vector<double> max_conf(MAX_MOLS_PER_PAGE, -FLT_MAX);
-	     std::vector<int> max_res(MAX_MOLS_PER_PAGE, 0);
-	     int num_structures = 0;
-	     for (int j = 0; j < num_resolutions; j++)
-	       for (int i = 0; i < array_of_ind_conf[j].size() && i < max_conf.size(); ++i)
-		 if (array_of_ind_conf[j][i] > max_conf[i])
-		    {
-		      max_conf[i] = array_of_ind_conf[j][i];
-		      max_res[i] = j;
-		      num_structures = std::max(num_structures, i + 1);
-		    }
-	      for (int i = 0; i < num_structures; ++i)
-		if (max_conf[i] > -FLT_MAX)
-		  {
-		    int j = max_res[i];
-		    pages_of_structures[l].push_back(array_of_structures[j][i]);
-		    if (!output_image_file_prefix.empty())
-		      pages_of_images[l].push_back(array_of_images[j][i]);
-		    pages_of_avg_bonds[l].push_back( array_of_avg_bonds[j][i]);
-		    pages_of_ind_conf[l].push_back( array_of_ind_conf[j][i]);
-		    pages_of_boxes[l].push_back(array_of_boxes[j][i]);
-		    total_structure_count++;
-		  }
-	   }
+	   for (int j = 0; j < num_resolutions; j++)
+	     {
+                array_of_structures_page[l][j] = array_of_structures[j];
+		if (!output_image_file_prefix.empty())
+		  array_of_images_page[l][j] = array_of_images[j];
+		array_of_avg_bonds_page[l][j] = array_of_avg_bonds[j];
+		array_of_ind_conf_page[l][j] = array_of_ind_conf[j];
+		array_of_boxes_page[l][j] = array_of_boxes[j];
+	      }
 
-      }
-    }
+       }
+     }
+
+    double max_conf = -FLT_MAX;
+    int max_res = 0;
+    for (int i = 0; i < num_resolutions; i++)
+        {
+          if (boxes_per_res[i] > 0 && array_of_confidence[i]/boxes_per_res[i] > max_conf)
+            {
+              max_conf = array_of_confidence[i]/boxes_per_res[i];
+              max_res = i;
+            }
+        }
+      for (int i = 0; i < num_resolutions; i++)
+	if (boxes_per_res[i] > 0 && array_of_confidence[i]/boxes_per_res[i] == max_conf && select_resolution[i] == 300) // second 300 dpi is without thinning
+	  {
+	    max_res = i;
+	    break;
+	  }
+
+	if (!show_learning)
+         for (int l = 0; l < page; l++)
+	    {
+	      pages_of_structures[l] = array_of_structures_page[l][max_res];
+	      if (!output_image_file_prefix.empty())
+		pages_of_images[l] = array_of_images_page[l][max_res];
+	      pages_of_avg_bonds[l] = array_of_avg_bonds_page[l][max_res];
+	      pages_of_ind_conf[l] = array_of_ind_conf_page[l][max_res];
+	      pages_of_boxes[l] = array_of_boxes_page[l][max_res];
+	      total_structure_count += array_of_structures_page[l][max_res].size();
+	    }
 
   double best_bond = 0;
 
@@ -1146,7 +1159,6 @@ int osra_process_image(
   // may be processed at different resolutions leading to a seemingly different average bond length
   // Currently multi-page documents (PDF and PS) are all processed at the same resolution
   // and single-page images have all structures on the page at the same resolution
-  // CHANGED: each structure is at its own best resolution 2022-12-22.
 
   //cout << min_bond << " " << max_bond << endl;
 
