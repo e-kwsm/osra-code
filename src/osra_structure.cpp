@@ -28,11 +28,13 @@
 #include <iostream> // std::cout
 #include <set>
 #include <stack>  
+#include <queue>
 
 #include "osra_common.h"
 #include "osra_structure.h"
 #include "osra_ocr.h"
 #include "osra_openbabel.h"
+#include "osra_segment.h"
 
 void remove_disconnected_atoms(std::vector<atom_t> &atom, std::vector<bond_t> &bond,
                                int n_atom, int n_bond)
@@ -3082,6 +3084,59 @@ std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label
     amount = 1;
 
   return std::make_tuple(amount, element, charge);
+}
+
+
+std::list<point_t> get_points(int x0, int y0, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND)
+{
+  std::list<point_t> points;
+  int width = image.columns();
+  int height = image.rows();
+  int x = x0;
+  int y = y0;
+  bool found = false;
+  for (int d = 0; d < 5 && !found; ++d)
+    for (x = x0 - d; x <= x0 + d && !found; ++x)
+      for (y = y0 - d; y <= y0 + d && !found; ++y)
+	if (x >= 0 && y >= 0 && x < width && y < height && get_pixel(image, bgColor, x, y, THRESHOLD_BOND))
+	  {
+	    found = true;
+	  }
+  if (!found)
+    return points;
+  std::vector<bool> visited(width * height, false);
+  std::queue<point_t> q;
+  q.push(point_t(x,y));
+  visited[x + width * y] = true;
+  while (!q.empty())
+    {
+      point_t p = q.front();
+      q.pop();
+      points.push_back(p);
+      for (int i = p.x - 1; i <= p.x + 1; ++i)
+	for (int j = p.y - 1; j <= p.y + 1; ++j)
+	  if (i >= 0 && j >= 0 && i < width && j < height && !visited[i + j * width] && get_pixel(image, bgColor, i, j, THRESHOLD_BOND))
+	    {
+	      q.push(point_t(i,j));
+	      visited[i + width * j] = true;
+	    }
+    }
+}
+
+void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND)
+{
+  for (int i = 0; i < n_bond; i++)
+    if (bond[i].exists && bond[i].type == 1
+	&& terminal_bond(bond[i].a, i, bond, n_bond) && atom[bond[i].a].label == " "
+	&& terminal_bond(bond[i].b, i, bond, n_bond) && atom[bond[i].b].label == " ")
+      {
+	std::list<point_t> points = get_points(int(atom[bond[i].a].x), int(atom[bond[i].a].y), image, bgColor, THRESHOLD_BOND);
+	point_t head, tail;
+	if (is_arrow(points, head, tail))
+	  {
+	    bond[i].arrow = true;
+	  }	 
+      }
 }
 
 // US20050049267A1-20050303-C04374.png

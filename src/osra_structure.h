@@ -429,3 +429,5 @@ void assign_labels_to_brackets(std::vector<bracket_t> &bracket_boxes, std::vecto
 void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, double avg);
 
 std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label, int n_label);
+
+void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND);

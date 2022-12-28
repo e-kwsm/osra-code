@@ -1013,6 +1013,9 @@ int osra_process_image(
 
                 thickness = find_wedge_bonds(thick_box, atom, n_atom, bond, n_bond, bgColor, THRESHOLD_BOND,
                                              max_dist_double_bond, avg_bond_length, 3, 1);
+		
+		find_arrow_bonds(bond, n_bond, atom, thick_box, bgColor, THRESHOLD_BOND);
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
 		n_letters = remove_plus_minus_next_to_hash_bond(letters, n_letters, bond, n_bond, atom, avg_bond_length);
                 n_label = assemble_labels(letters, n_letters, label);
@@ -1036,7 +1039,6 @@ int osra_process_image(
 
                 extend_terminal_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length / 2,
 					      thickness, max_dist_double_bond);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
                 collapse_atoms(atom, bond, n_atom, n_bond, thickness);

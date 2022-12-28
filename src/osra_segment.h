@@ -128,6 +128,7 @@ void find_segments(const Image &image, double threshold, const ColorGray &bgColo
 // Number of molecular structure images
 int prune_clusters(std::list<std::list<std::list<point_t> > > &clusters, std::vector<box_t> &boxes, std::set<std::pair<int,int> > &brackets);
 
+bool is_arrow(const std::list<point_t> &points, point_t &head, point_t &tail);
 
 template<class T>
 void build_hist(const T &seg, std::vector<int> &hist, const int len, int &top_pos, int &top_value,point_t &head,point_t &tail, point_t &center, int &min_x, int &min_y, int &max_x, int &max_y)

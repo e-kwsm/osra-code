@@ -716,16 +716,23 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
   
   if (pos<3) return false;
   int midpoint = std::min(int(0.75 * n), pos - 3);
-  if (midpoint<0) return false;
+  if (midpoint > 0)
+    --midpoint;
+  if (midpoint<=0) return false;
 
   double avg=0;
   for (int i=0; i<midpoint; i++)
-    avg +=y[i];
+    {
+      avg +=y[i];
+    }
   avg /=int(midpoint);
 
   bool flat = true;
   for (int i=2; i<midpoint; i++)
-    if (fabs(y[i]-avg)>2) flat = false;
+    if (fabs(y[i]-avg)>2)
+      {
+	flat = false;
+      }
 
   bool left = true;
   for (int i=pos-1; i>=midpoint; i--)
@@ -741,7 +748,6 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
 
   return flat && left && right && peak;
 }
-
 
 void find_arrows_pluses(std::vector<std::vector<point_t> > &margins,
                         std::vector<std::list<point_t> > &segments,
@@ -1324,3 +1330,54 @@ int prune_clusters(std::list<std::list<std::list<point_t> > > &clusters, std::ve
   return (n_boxes);
 }
 
+bool is_arrow(const std::list<point_t> &points, point_t &head, point_t &tail)
+{
+  if (points.empty())
+    return false;
+  
+   const int len=50;
+   std::vector<int> hist(len,0);
+   int top_pos=0;
+   int top_value=0;
+   point_t center;
+   int min_x, min_y, max_x, max_y;
+   build_hist(points, hist, len, top_pos, top_value, head, tail, center, min_x, min_y, max_x, max_y);
+   if (top_value>5)
+     {
+       std::vector<int> peaks(1,top_pos);
+       std::vector<int> values(1,top_value);
+       for (int k=1; k<len;k++)
+	 {
+	   int pos=k+top_pos;
+	   if (pos>=len) pos -= len;
+	   int after=pos+1;
+	   int before=pos-1;
+	   int before2 = pos - 2;
+	   if (after>=len) after -=len;
+	   if (before<0) before +=len;
+	   if (before2<0) before2 +=len;
+	   if ( (hist[before]<hist[pos] || (hist[before] == hist[pos] && hist[before2] < hist[pos]))
+		&& hist[after]<hist[pos] && hist[pos]>=top_value/2)  // find all peaks at least half as high as the top-most
+	     {
+	       peaks.push_back(pos);
+	       values.push_back(hist[pos]);
+	     }
+	    }
+       if (peaks.size() == 2   && abs(len/2 - abs(peaks[1]-peaks[0]))<=1)  // only two peaks are present at 180 degrees
+	 {
+	   bool ba=bulge(tail, head, points);
+	   bool bb=bulge(head, tail, points);
+	   double l = distance(tail.x, tail.y, head.x, head.y);
+	   if ((ba || bb) && l > 2 * MAX_FONT_HEIGHT)
+	     {
+	       // we found an arrow!
+	       if (bb)
+		 {
+		   std::swap(head, tail);
+		 }
+	       return true;
+	     }
+	 }
+     }
+   return false;
+}

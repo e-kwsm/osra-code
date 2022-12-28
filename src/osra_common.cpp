@@ -243,6 +243,10 @@ void debug_image(Image image, const std::vector<atom_t> &atom, int n_atom,
             {
               image.strokeColor("cyan");
             }
+	   if (bond[i].arrow)
+            {
+              image.strokeColor("pink");
+            }
           image.draw(DrawableLine(atom[bond[i].a].x, atom[bond[i].a].y, atom[bond[i].b].x, atom[bond[i].b].y));
         }
     }
