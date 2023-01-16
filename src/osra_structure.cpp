@@ -850,10 +850,11 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].a].max_x = letters[l2].max_x;
 		atom[bond[j].a].max_y = letters[l2].max_y;
 		taken_letters.push_back(l2);
+		l1 = -1;
               }
             else if (found1)
               {
-		//cout<<label[l1].a<<" "<<label[l1].x1<<" "<<label[l1].y1<<" "<<atom[bond[j].a].x<<" "<<atom[bond[j].a].y<<" "<<j<<endl;
+		//std::cout<<label[l1].a<<" "<<label[l1].x1<<" "<<label[l1].y1<<" "<<atom[bond[j].a].x<<" "<<atom[bond[j].a].y<<" "<<j<<std::endl;
                 atom[bond[j].a].label = label[l1].a;
                 atom[bond[j].a].x = (label[l1].x1 + label[l1].x2) / 2;
                 atom[bond[j].a].y = (label[l1].y1 + label[l1].y2) / 2;
@@ -874,6 +875,8 @@ void extend_terminal_bond_to_label(
                   double d1 = distance_from_bond_x_b(xa, ya, xb, yb, label[i].x1, label[i].y1);
                   double d2 = distance_from_bond_x_b(xa, ya, xb, yb, label[i].x2, label[i].y2);
 		  double nb = std::min(d1, d2);
+		  //std::cout <<xb<<" "<<yb<<" "<<label[i].a<<" "<<nb<<std::endl;
+
                   if (is_point_within_dist_of_rect(label[i].min_x, label[i].min_y, label[i].max_x, label[i].max_y, xb, yb, avg) && nb < minb)
                     {
                       found1 = true;
@@ -910,6 +913,7 @@ void extend_terminal_bond_to_label(
 		atom[bond[j].b].max_x = letters[l2].max_x;
 		atom[bond[j].b].max_y = letters[l2].max_y;
 		taken_letters.push_back(l2);
+		l1 = -1;
               }
             else if (found1)
               {

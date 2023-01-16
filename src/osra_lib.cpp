@@ -1038,8 +1038,10 @@ int osra_process_image(
 
                 extend_terminal_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length / 2,
 					      thickness, max_dist_double_bond);
+		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
 		extend_arrow_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length);
-		//if (ttt++ == 2)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
+
                 remove_disconnected_atoms(atom, bond, n_atom, n_bond);
                 collapse_atoms(atom, bond, n_atom, n_bond, thickness);
                 collapse_doubleup_bonds(bond, n_bond);
