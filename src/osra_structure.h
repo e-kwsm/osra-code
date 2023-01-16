@@ -430,4 +430,8 @@ void remove_high_order_bonds_connected_to_hash_bonds(std::vector<bond_t> &bond, 
 
 std::tuple<unsigned int, std::string, int> find_ions(std::vector<label_t> &label, int n_label);
 
-void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND);
+void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND);
+
+void extend_arrow_bond_to_label(std::vector<atom_t> &atom, std::vector<letters_t> &letters,
+				int n_letters, const std::vector<bond_t> &bond, int n_bond,
+				std::vector<label_t> &label, int n_label, double avg);

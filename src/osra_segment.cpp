@@ -715,9 +715,7 @@ bool bulge(const point_t tail, const point_t head, const std::list<point_t> & se
     std::cout<<std::endl;*/
   
   if (pos<3) return false;
-  int midpoint = std::min(int(0.75 * n), pos - 3);
-  if (midpoint > 0)
-    --midpoint;
+  int midpoint = std::min(int(0.5 * n), pos - 3);
   if (midpoint<=0) return false;
 
   double avg=0;
@@ -1357,17 +1355,20 @@ bool is_arrow(const std::list<point_t> &points, point_t &head, point_t &tail)
 	   if (before<0) before +=len;
 	   if (before2<0) before2 +=len;
 	   if ( (hist[before]<hist[pos] || (hist[before] == hist[pos] && hist[before2] < hist[pos]))
-		&& hist[after]<hist[pos] && hist[pos]>=top_value/2)  // find all peaks at least half as high as the top-most
+		&& hist[after]<hist[pos] && hist[pos] + 1 >= top_value/2 && 
+		abs(pos - peaks.back()) > 2 && abs(pos - peaks.back()) < len - 2  )  // find all peaks at least half as high as the top-most
 	     {
 	       peaks.push_back(pos);
 	       values.push_back(hist[pos]);
 	     }
 	    }
+
        if (peaks.size() == 2   && abs(len/2 - abs(peaks[1]-peaks[0]))<=1)  // only two peaks are present at 180 degrees
 	 {
 	   bool ba=bulge(tail, head, points);
 	   bool bb=bulge(head, tail, points);
 	   double l = distance(tail.x, tail.y, head.x, head.y);
+	   //std::cout << tail.x<<" "<< tail.y<<" "<<ba<<" "<<bb<<std::endl;
 	   if ((ba || bb) && l > 2 * MAX_FONT_HEIGHT)
 	     {
 	       // we found an arrow!

@@ -3123,7 +3123,28 @@ std::list<point_t> get_points(int x0, int y0, const Image &image, const ColorGra
     }
 }
 
-void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND)
+void remove_small_bonds_connected_to_arrow_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, int arrow)
+{
+  double xa = atom[bond[arrow].a].x;
+  double xb = atom[bond[arrow].b].x;
+  double ya = atom[bond[arrow].a].y;
+  double yb = atom[bond[arrow].b].y;
+  double bl = bond_length(bond, arrow, atom);
+  for (int i = 0; i < n_bond; i++)
+    if (bond[i].exists && i != arrow && bonds_within_each_other(bond, i, arrow, atom) && bond_length(bond, i, atom) < bl / 2)
+      {
+	double xia = atom[bond[i].a].x;
+	double yia = atom[bond[i].a].y;
+	double xib = atom[bond[i].b].x;
+	double yib = atom[bond[i].b].y;
+	double da =  fabs(distance_from_bond_y(xa, ya, xb, yb, xia, yia));
+	double db =  fabs(distance_from_bond_y(xa, ya, xb, yb, xib, yib));
+	if (std::min(da, db) < 2 && std::max(da, db) < bl / 2 && distance(xb, yb, xia, yia) < bl / 2 && distance(xb, yb, xib, yib) < bl / 2)
+	  bond[i].exists = false;
+      }
+}
+
+void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, const Image &image, const ColorGray &bgColor, double THRESHOLD_BOND)
 {
   for (int i = 0; i < n_bond; i++)
     if (bond[i].exists && bond[i].type == 1
@@ -3135,8 +3156,84 @@ void find_arrow_bonds(std::vector<bond_t> &bond, int n_bond, std::vector<atom_t>
 	if (is_arrow(points, head, tail))
 	  {
 	    bond[i].arrow = true;
+	    if (distance(atom[bond[i].a].x, atom[bond[i].a].y, head.x, head.y) < distance(atom[bond[i].b].x, atom[bond[i].b].y, head.x, head.y))
+	      bond_end_swap(bond, i);
+	    remove_small_bonds_connected_to_arrow_bonds(bond, n_bond, atom, i);
 	  }	 
       }
+}
+
+void extend_arrow_bond_to_label(std::vector<atom_t> &atom, std::vector<letters_t> &letters,
+				int n_letters, const std::vector<bond_t> &bond, int n_bond,
+				std::vector<label_t> &label, int n_label, double avg)
+{
+  std::vector<int> taken_letters;
+  for (int i = 0; i < n_bond; i++)
+    if (bond[i].exists && bond[i].arrow && atom[bond[i].b].label == " ")
+      {
+	double xa = atom[bond[i].a].x;
+        double ya = atom[bond[i].a].y;
+        double xb = atom[bond[i].b].x;
+        double yb = atom[bond[i].b].y;
+	bool found1 = false, found2 = false;
+	double minb = FLT_MAX;
+	int l1, l2;
+	for (int j = 0; j < n_label; j++)
+	  if ((label[j].a)[0] != '+' && (label[j].a)[0] != '-')
+	    {
+	      double x = 0.5 * (label[j].min_x + label[j].max_x);
+	      double y = 0.5 * (label[j].min_y + label[j].max_y);
+	      double d = distance(xb, yb, x, y);
+	      double angle = angle4(xb, yb, xa, ya, x, y, xa, ya);
+		if (angle > 0.85 && d < minb && is_point_within_dist_of_rect(label[j].min_x, label[j].min_y, label[j].max_x, label[j].max_y, xb, yb, 2*avg))
+		  {
+		    found1 = true;
+		    l1 = j;
+		    minb = d;
+		  }                 
+	    }
+	for (int j = 0; j < n_letters; j++)
+	  if (letters[j].free && letters[j].a != '+' && letters[j].a != '-')
+                {
+		  double x =  letters[j].x;
+		  double y =  letters[j].y;
+                  double d = distance(xb, yb, x, y);
+		  double angle = angle4(xb, yb, xa, ya, x, y, xa, ya);
+                  if (angle > 0.85 && d < minb && is_point_within_dist_of_rect(letters[j].min_x, letters[j].min_y, letters[j].max_x, letters[j].max_y, xb, yb, 2*avg))
+                    {
+                      found2 = true;
+                      l2 = j;
+                      minb = d;
+                    }
+                }
+
+            if (found2)
+              {
+                atom[bond[i].b].label = toupper(letters[l2].a);
+                atom[bond[i].b].x = letters[l2].x;
+                atom[bond[i].b].y = letters[l2].y;
+		atom[bond[i].b].min_x = letters[l2].min_x;
+		atom[bond[i].b].min_y = letters[l2].min_y;
+		atom[bond[i].b].max_x = letters[l2].max_x;
+		atom[bond[i].b].max_y = letters[l2].max_y;
+		taken_letters.push_back(l2);
+              }
+            else if (found1)
+              {
+                atom[bond[i].b].label = label[l1].a;
+                atom[bond[i].b].x = (label[l1].x1 + label[l1].x2) / 2;
+                atom[bond[i].b].y = (label[l1].y1 + label[l1].y2) / 2;
+		atom[bond[i].b].min_x = label[l1].min_x;
+		atom[bond[i].b].min_y = label[l1].min_y;
+		atom[bond[i].b].max_x = label[l1].max_x;
+		atom[bond[i].b].max_y = label[l1].max_y;
+		label[l1].free = false;
+              }
+      }
+  for (auto i : taken_letters)
+    {
+      letters[i].free = false;
+    }
 }
 
 // US20050049267A1-20050303-C04374.png
