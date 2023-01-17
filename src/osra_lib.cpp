@@ -1038,7 +1038,6 @@ int osra_process_image(
 
                 extend_terminal_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length / 2,
 					      thickness, max_dist_double_bond);
-		//if (ttt++ == 0)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
 		extend_arrow_bond_to_label(atom, letters, n_letters, bond, n_bond, label, n_label, avg_bond_length);
 
@@ -1056,6 +1055,7 @@ int osra_process_image(
 		remove_bracket_atoms(atom, n_atom, bond, n_bond, brackets, thickness, boxes[k].x1, boxes[k].y1, box_scale, real_font_width, real_font_height, bracket_boxes);
 		remove_zero_bonds(bond, n_bond, atom);
 		flatten_bonds(bond, n_bond, atom, 2*thickness);
+		//if (ttt++ == 1)  debug_image(orig_box, atom, n_atom, bond, n_bond, "tmp.png");
 
 		assign_labels_to_brackets(bracket_boxes, label, n_label, letters, n_letters, real_font_width, real_font_height);
 		std::tuple<unsigned int, std::string, int> ions = find_ions(label, n_label);

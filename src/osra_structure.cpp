@@ -2750,7 +2750,7 @@ bool overlap_boxes(const box_t &a, const box_t &b)
     return true;
 }
 
-bool in_ring(const std::vector<std::vector<std::pair<int,int> > > &adjacency,
+std::stack<std::pair<int, int> > in_ring(const std::vector<std::vector<std::pair<int,int> > > &adjacency,
 	 const int n_bond, const int start, const int max_depth = 6)
 {
   std::vector<bool> visited(n_bond, false); 
@@ -2771,7 +2771,9 @@ bool in_ring(const std::vector<std::vector<std::pair<int,int> > > &adjacency,
 	    continue;
 	  visited[b] = true;
 	  if (n == start)
-	    return true;
+	    {
+	      return todo;
+	    }
 	  if (current_depth < max_depth)
 	    {
 	      todo.push(std::make_pair(n, current_depth));
@@ -2781,7 +2783,44 @@ bool in_ring(const std::vector<std::vector<std::pair<int,int> > > &adjacency,
       if (todo.top().first == current_node)
 	todo.pop();
     }
-  return false;
+  return todo;
+}
+
+bool real_ring(std::stack<std::pair<int, int> >  &ring, const std::vector<atom_t> &atom)
+{
+  if (ring.size() != 6)
+    return false;
+  double std_angle = cos (M_PI - 2*M_PI / ring.size());
+  int node0 = ring.top().first;
+  ring.pop();
+  int node1 = ring.top().first;
+  ring.pop();
+  int origin = node0;
+  int node2;
+  double min_dist = distance(atom[node0].x, atom[node0].y, atom[node1].x, atom[node1].y);
+  double max_dist = min_dist;
+  while (!ring.empty())
+    {
+      node2 = ring.top().first;
+      ring.pop();
+      double angle = angle4(atom[node0].x, atom[node0].y, atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y, atom[node1].x, atom[node1].y);
+      double diff = fabs(angle - std_angle);
+      if (diff > 0.02)
+	return false;
+      min_dist = std::min(min_dist,  distance(atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y));
+      max_dist = std::max(max_dist,  distance(atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y));
+      node0 = node1;
+      node1 = node2;
+    }
+  node2 = origin;
+  double angle = angle4(atom[node0].x, atom[node0].y, atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y, atom[node1].x, atom[node1].y);
+  double diff = fabs(angle - std_angle);
+  if (diff > 0.02)
+    return false;
+  min_dist = std::min(min_dist,  distance(atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y));
+  max_dist = std::max(max_dist,  distance(atom[node1].x, atom[node1].y, atom[node2].x, atom[node2].y));
+
+  return max_dist - min_dist < 3;
 }
 
 void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
@@ -2810,12 +2849,15 @@ void remove_bracket_atoms(std::vector<atom_t> &atom, int n_atom,
       adjacency[bond[i].a].push_back(std::make_pair(i, bond[i].b));
       adjacency[bond[i].b].push_back(std::make_pair(i, bond[i].a));
     }
-  
+   
   std::vector<point_t> confirmed;
   std::vector<bool> remove_atoms(n_atom, false);
   for (int i = 0; i < n_atom; i++)
-    if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && bond_type[i] == 1 && !in_ring(adjacency, n_bond, i))
+    if (atom[i].exists  && (atom[i].label == " " || atom[i].label.empty()) && bond_type[i] == 1)
       {
+	auto ring = in_ring(adjacency, n_bond, i);
+	if (real_ring(ring, atom))
+	  continue;
 	bool found = false;
 	double x =   (double)  box_scale * atom[i].x + box_x -  FRAME;
 	double y =   (double)  box_scale * atom[i].y + box_y -  FRAME;
