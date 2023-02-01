@@ -3167,6 +3167,7 @@ std::list<point_t> get_points(int x0, int y0, const Image &image, const ColorGra
 	      visited[i + width * j] = true;
 	    }
     }
+  return points;
 }
 
 void remove_small_bonds_connected_to_arrow_bonds(std::vector<bond_t> &bond, int n_bond, const std::vector<atom_t> &atom, int arrow)
