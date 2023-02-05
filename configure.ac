@@ -427,6 +427,7 @@ AS_IF([test "${enable_static_linking:+set}" == "set"  -o "$build_os" == "darwin"
 		AC_CHECK_LIB([iconv], [libiconv_open], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([expat],[XML_ParserCreate], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([lcms2], [cmsSetLogErrorHandler], [], [ac_lib_poppler=no])
+		AC_CHECK_LIB([lzma], [lzma_code], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([tiff], [TIFFFdOpen], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([jpeg], [jpeg_destroy_compress], [], [ac_lib_poppler=no])
 		AC_CHECK_LIB([openjp2], [opj_image_destroy], [], [ac_lib_poppler=no])		
@@ -466,6 +467,7 @@ AS_IF([test "${ac_lib_tesseract}" == "yes"], [
 	AS_IF([test "${enable_static_linking:+set}" == "set"], [
 		LIBS="-ljpeg -lz ${LIBS}"
 		AC_CHECK_LIB([pthread], [sem_init], [], [ac_lib_tesseract=no])
+		AC_CHECK_LIB([lzma], [lzma_code], [], [ac_lib_tesseract=no])
 		AC_CHECK_LIB([tiff], [TIFFGetField], [], [ac_lib_tesseract=no])
 	])
 
@@ -662,7 +664,7 @@ AS_IF([test "${enable_graphicsmagick_config:+set}" != "set"], [
 ], [
 	AS_IF([test "${enable_static_linking:+set}" == "set" -o "$build_os" == "darwin"], [
 		dnl Special case for OSX: the libraries should be at fixed locations:
-		LIBS="-ljpeg ${MACPORTSLIBS}/liblcms2.a ${MACPORTSLIBS}/libtiff.a ${MACPORTSLIBS}/libfreetype.a ${MACPORTSLIBS}/libjasper.a ${MACPORTSLIBS}/libpng.a ${MACPORTSLIBS}/libbz2.a ${MACPORTSLIBS}/libz.a ${LIBS}"
+		LIBS="-ljpeg ${MACPORTSLIBS}/liblcms2.a ${MACPORTSLIBS}/libtiff.a ${MACPORTSLIBS}/liblzma.a ${MACPORTSLIBS}/libfreetype.a ${MACPORTSLIBS}/libjasper.a ${MACPORTSLIBS}/libpng.a ${MACPORTSLIBS}/libbz2.a ${MACPORTSLIBS}/libz.a ${LIBS}"
 	])
 ])
 
