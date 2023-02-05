@@ -323,3 +323,5 @@ void debug_image(Image image, const std::vector<atom_t> &atom, int n_atom, const
                  int n_bond, const std::string &fname);
 
 bool is_point_within_dist_of_rect(double x1, double y1, double x2, double y2, double x, double y, double dist);
+
+bool endsWith(const std::string& str, const std::string& suffix);

@@ -638,28 +638,36 @@ int osra_process_image(
 
   std::string type;
 
+#ifndef OSRA_LIB  
+  if (endsWith(input_file, ".pdf") || endsWith(input_file, ".PDF"))
+    type = "PDF";
+  else if (endsWith(input_file, ".ps") || endsWith(input_file, ".PS"))
+    type = "PS";
+#endif
+
 #ifdef OSRA_LIB
   Blob blob(image_data, image_length);
 #endif
 
-  try
+  if (type.empty())
     {
-      Image image_typer;
+      try
+	{
+	  Image image_typer;
 #ifdef OSRA_LIB
-      image_typer.ping(blob);
+	  image_typer.ping(blob);
 #else
-      image_typer.ping(input_file);
+	  image_typer.ping(input_file);
 #endif
-      type = image_typer.magick();
-    }
-  catch (...)
-    {
-      // Unfortunately, GraphicsMagick does not throw exceptions in all cases, so it behaves inconsistent, see
-      // https://sourceforge.net/tracker/?func=detail&aid=3022955&group_id=40728&atid=428740
-    }
 
-  //int stderr_copy = dup(2);
-  //fclose(stderr);
+	  type = image_typer.magick();
+	}
+      catch (...)
+	{
+	  // Unfortunately, GraphicsMagick does not throw exceptions in all cases, so it behaves inconsistent, see
+	  // https://sourceforge.net/tracker/?func=detail&aid=3022955&group_id=40728&atid=428740
+	}
+    }
 
   int page = 1;
   poppler::document* poppler_doc = NULL;
