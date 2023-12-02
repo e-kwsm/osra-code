@@ -849,6 +849,28 @@ int osra_process_image(
           image.backgroundColor(bgColor);
           image.rotate(rotate);
         }
+      else
+	{
+	  int angle = 0;
+	  size_t max_length = ocr_page(image, 0.1, bgColor);	 
+	  for (int a = 90; a < 360; a += 90)
+	    {
+	      image.rotate(90);
+	      size_t tmp_length = ocr_page(image, 0.1, bgColor);
+	      if (tmp_length > max_length)
+		{
+		  max_length = tmp_length;
+		  angle = a;
+		}	      
+	    }
+	  image.rotate(90);
+	  if (angle != 0)
+	    {
+	      image.rotate(angle);
+	      if (verbose)
+		std::cout << "Image rotated by: " << angle << " degrees." << std::endl;
+	    }
+	}
 
       double rotation = rotate * PI / 180;
       int unpaper_dx = 0;

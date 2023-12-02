@@ -22,6 +22,7 @@
 
 #include <vector> // std:vector
 #include <iostream> // std::cout
+#include <sstream>
 
 #include "osra_common.h"
 #include "config.h"
@@ -90,6 +91,46 @@ void osra_ocr_destroy()
 #ifdef HAVE_TESSERACT_LIB
   osra_tesseract_destroy();
 #endif
+}
+
+size_t ocr_page(const Image &image, double threshold, const ColorGray &bgColor)
+{
+  std::stringstream ss;
+  job_t job1, *job; 
+  job=OCR_JOB=&job1;
+  job_init(job);
+  job_init_image(job); 
+
+  unsigned int width = image.columns();
+  unsigned int height = image.rows();
+  unsigned char *pixmap = (unsigned char *) malloc(width * height);
+  for (int i = 0; i < height; i++)
+    for (int j = 0; j < width; j++)
+      pixmap[i * width + j] = (unsigned char) (255 - 255 * get_pixel(image, bgColor, j, i, threshold));
+  
+  job1.src.p.x = width;
+  job1.src.p.y = height;
+  job1.src.p.bpp = 1;
+  job1.src.p.p = pixmap;
+  char* char_filter = const_cast<char*>("CNFSBME"); 
+  job1.cfg.cfilter = char_filter; //(char*)NULL;
+    
+  pgm2asc(job);
+
+  int linecounter = 0;
+  const char *line = getTextLine(&(job->res.linelist), linecounter++);
+  while (line)
+    {
+      ss << line;
+      line = getTextLine(&(job->res.linelist), linecounter++);
+    }
+  free_textlines(&(job->res.linelist));  
+  job_free_image(job);
+  std::string str = ss.str();  
+  str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+  str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+  str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+  return str.size();
 }
 
 // Function: osra_gocr_ocr()

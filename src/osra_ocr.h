@@ -80,3 +80,5 @@ const std::string fix_atom_name(const std::string &s, int n, const std::map<std:
                                 const std::map<std::string, std::string> &superatom, bool debug);
 
 bool detect_bracket(int x, int y, unsigned char *pic);
+
+size_t  ocr_page(const Image &image, double threshold, const ColorGray &bgColor);
