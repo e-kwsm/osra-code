@@ -115,8 +115,14 @@ size_t ocr_page(const Image &image, double threshold, const ColorGray &bgColor)
   char* char_filter = const_cast<char*>("CNFSBME"); 
   job1.cfg.cfilter = char_filter; //(char*)NULL;
     
-  pgm2asc(job);
-
+  try
+    {
+      pgm2asc(job);
+    }
+  catch (...)
+    {
+    }
+  
   int linecounter = 0;
   const char *line = getTextLine(&(job->res.linelist), linecounter++);
   while (line)
@@ -126,6 +132,8 @@ size_t ocr_page(const Image &image, double threshold, const ColorGray &bgColor)
     }
   free_textlines(&(job->res.linelist));  
   job_free_image(job);
+  OCR_JOB = NULL;
+  JOB = NULL;
   std::string str = ss.str();  
   str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
   str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
@@ -441,6 +449,7 @@ char get_atom_label(const Magick::Image &image, const Magick::ColorGray &bg, int
 
 FINALIZE:
     // "pixmap" is freed together with "gocr_job".
+    free_textlines(&(gocr_job.res.linelist));
     job_free_image(&gocr_job);
     OCR_JOB = NULL;
     JOB = NULL;
@@ -626,7 +635,7 @@ bool detect_bracket(int x, int y, unsigned char *pic)
 
   delete ocrad_pixmap;
   free(ocrad_bitmap);
-
+  free_textlines(&(job.res.linelist));
   job_free_image(&job);
   OCR_JOB = NULL;
   JOB = NULL;
